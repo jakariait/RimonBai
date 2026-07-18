@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import api from "../lib/api";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import api from '../lib/api';
+import { persist } from 'zustand/middleware';
 
 const useAuthStore = create(
   persist(
@@ -12,9 +12,9 @@ const useAuthStore = create(
       login: async (email, password) => {
         set({ isLoading: true });
         try {
-          const { data } = await api.post("/auth/login", { email, password });
+          const { data } = await api.post('/auth/login', { email, password });
           if (data.data?.accessToken) {
-            localStorage.setItem("accessToken", data.data.accessToken);
+            localStorage.setItem('accessToken', data.data.accessToken);
           }
           set({ user: data.data.user, isAuthenticated: true, isLoading: false });
           return data.data.user;
@@ -26,17 +26,17 @@ const useAuthStore = create(
 
       logout: async () => {
         try {
-          await api.post("/auth/logout");
+          await api.post('/auth/logout');
         } catch {
           // ignore
         }
-        localStorage.removeItem("accessToken");
+        localStorage.removeItem('accessToken');
         set({ user: null, isAuthenticated: false });
       },
 
       getProfile: async () => {
         try {
-          const { data } = await api.get("/auth/profile");
+          const { data } = await api.get('/auth/profile');
           set({ user: data.data, isAuthenticated: true });
           return data.data;
         } catch {
@@ -46,7 +46,7 @@ const useAuthStore = create(
       },
 
       changePassword: async (currentPassword, newPassword) => {
-        const { data } = await api.put("/auth/change-password", {
+        const { data } = await api.put('/auth/change-password', {
           currentPassword,
           newPassword,
         });
@@ -54,7 +54,7 @@ const useAuthStore = create(
       },
     }),
     {
-      name: "auth-storage",
+      name: 'auth-storage',
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,

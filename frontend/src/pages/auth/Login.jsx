@@ -1,20 +1,26 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema } from "../../lib/validations";
-import useAuthStore from "../../store/useAuthStore";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { Label } from "../../components/ui/Label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/Card";
-import { toast } from "sonner";
-import { Activity } from "lucide-react";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '../../lib/validations';
+import useAuthStore from '../../store/useAuthStore';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Label } from '../../components/ui/Label';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '../../components/ui/Card';
+import { toast } from 'sonner';
+import { Activity } from 'lucide-react';
 
 function Login() {
   const navigate = useNavigate();
   const { login, isLoading } = useAuthStore();
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const {
     register,
@@ -26,12 +32,12 @@ function Login() {
 
   const onSubmit = async (data) => {
     try {
-      setError("");
+      setError('');
       await login(data.email, data.password);
-      toast.success("Login successful");
-      navigate("/");
+      toast.success('Login successful');
+      navigate('/');
     } catch (err) {
-      setError(err?.response?.data?.message || "Login failed");
+      setError(err?.response?.data?.message || 'Login failed');
     }
   };
 
@@ -55,11 +61,23 @@ function Login() {
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="Enter your email" {...register("email")} error={errors.email?.message} />
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                {...register('email')}
+                error={errors.email?.message}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="Enter your password" {...register("password")} error={errors.password?.message} />
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                {...register('password')}
+                error={errors.password?.message}
+              />
             </div>
             <Button type="submit" className="w-full" isLoading={isLoading}>
               Sign In

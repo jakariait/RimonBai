@@ -1,96 +1,101 @@
 const mongoose = require('mongoose');
 const { SALE_STATUSES, PAYMENT_METHODS } = require('../constants');
 
-const saleSchema = new mongoose.Schema({
-  invoiceNumber: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  customer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Customer',
-    required: [true, 'Customer is required'],
-  },
-  saleDate: {
-    type: Date,
-    default: Date.now,
-  },
-  items: [{
-    product: {
+const saleSchema = new mongoose.Schema(
+  {
+    invoiceNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    customer: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true,
+      ref: 'Customer',
+      required: [true, 'Customer is required'],
     },
-    quantity: {
+    saleDate: {
+      type: Date,
+      default: Date.now,
+    },
+    items: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+        unitPrice: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        totalPrice: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    subtotal: {
       type: Number,
-      required: true,
-      min: 1,
+      default: 0,
     },
-    unitPrice: {
+    discount: {
       type: Number,
-      required: true,
-      min: 0,
+      default: 0,
     },
-    totalPrice: {
+    taxRate: {
       type: Number,
-      required: true,
+      default: 0,
     },
-  }],
-  subtotal: {
-    type: Number,
-    default: 0,
+    taxAmount: {
+      type: Number,
+      default: 0,
+    },
+    deliveryCharge: {
+      type: Number,
+      default: 0,
+    },
+    grandTotal: {
+      type: Number,
+      default: 0,
+    },
+    paidAmount: {
+      type: Number,
+      default: 0,
+    },
+    dueAmount: {
+      type: Number,
+      default: 0,
+    },
+    paymentMethod: {
+      type: String,
+      enum: PAYMENT_METHODS,
+      default: 'Cash',
+    },
+    status: {
+      type: String,
+      enum: SALE_STATUSES,
+      default: 'Completed',
+    },
+    notes: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
   },
-  discount: {
-    type: Number,
-    default: 0,
-  },
-  taxRate: {
-    type: Number,
-    default: 0,
-  },
-  taxAmount: {
-    type: Number,
-    default: 0,
-  },
-  deliveryCharge: {
-    type: Number,
-    default: 0,
-  },
-  grandTotal: {
-    type: Number,
-    default: 0,
-  },
-  paidAmount: {
-    type: Number,
-    default: 0,
-  },
-  dueAmount: {
-    type: Number,
-    default: 0,
-  },
-  paymentMethod: {
-    type: String,
-    enum: PAYMENT_METHODS,
-    default: 'Cash',
-  },
-  status: {
-    type: String,
-    enum: SALE_STATUSES,
-    default: 'Completed',
-  },
-  notes: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
-}, {
-  timestamps: true,
-});
+  {
+    timestamps: true,
+  }
+);
 
 saleSchema.index({ invoiceNumber: 1 });
 saleSchema.index({ customer: 1 });

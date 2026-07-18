@@ -9,12 +9,18 @@ const createPurchase = async (data, userId) => {
   const count = await Purchase.countDocuments();
   const purchaseNumber = generatePurchaseNumber('PUR', count + 1);
 
-  const items = data.items.map(item => ({
+  const items = data.items.map((item) => ({
     ...item,
     totalCost: item.quantity * item.unitCost,
   }));
 
-  const totals = calculateTotals(items, data.discount, data.taxRate, data.shipping, data.otherCosts);
+  const totals = calculateTotals(
+    items,
+    data.discount,
+    data.taxRate,
+    data.shipping,
+    data.otherCosts
+  );
 
   const purchase = await Purchase.create({
     purchaseNumber,
@@ -57,18 +63,23 @@ const createPurchase = async (data, userId) => {
   }
 
   await Supplier.findByIdAndUpdate(data.supplier, {
-    $inc: { totalPurchases: totals.grandTotal, totalPaid: data.paidAmount || 0, outstandingBalance: purchase.dueAmount },
+    $inc: {
+      totalPurchases: totals.grandTotal,
+      totalPaid: data.paidAmount || 0,
+      outstandingBalance: purchase.dueAmount,
+    },
   });
 
-  return (await Purchase.findById(purchase._id)
+  return await Purchase.findById(purchase._id)
     .populate('supplier', 'companyName')
-    .populate('items.product', 'productName sku'));
+    .populate('items.product', 'productName sku');
 };
 
 const getPurchases = async (query) => {
-  const features = new APIFeatures(Purchase.find()
-    .populate('supplier', 'companyName phone')
-    .populate('items.product', 'productName sku'),
+  const features = new APIFeatures(
+    Purchase.find()
+      .populate('supplier', 'companyName phone')
+      .populate('items.product', 'productName sku'),
     query
   )
     .search(['purchaseNumber'])

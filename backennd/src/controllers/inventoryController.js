@@ -21,4 +21,9 @@ const getStockMovementsReport = async (req, res) => {
   sendSuccess(res, result.data, 'Stock movements fetched successfully', 200, result.meta);
 };
 
-module.exports = { getInventorySummary, getLowStockProducts, getOutOfStockProducts, getStockMovementsReport };
+module.exports = {
+  getInventorySummary,
+  getLowStockProducts,
+  getOutOfStockProducts,
+  getStockMovementsReport,
+};

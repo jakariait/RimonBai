@@ -31,4 +31,11 @@ const getExpenseReports = async (req, res) => {
   sendSuccess(res, result, 'Expense report fetched successfully');
 };
 
-module.exports = { createExpense, getExpenses, getExpenseById, updateExpense, deleteExpense, getExpenseReports };
+module.exports = {
+  createExpense,
+  getExpenses,
+  getExpenseById,
+  updateExpense,
+  deleteExpense,
+  getExpenseReports,
+};

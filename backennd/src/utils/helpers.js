@@ -16,7 +16,7 @@ const generatePurchaseNumber = (prefix = 'PUR', count) => {
 };
 
 const calculateTotals = (items, discount = 0, taxRate = 0, shipping = 0, otherCosts = 0) => {
-  const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0);
+  const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
   const totalDiscount = typeof discount === 'number' ? discount : 0;
   const taxAmount = (subtotal - totalDiscount) * (taxRate / 100);
   const grandTotal = subtotal - totalDiscount + taxAmount + shipping + otherCosts;

@@ -45,7 +45,7 @@ const authorize = (...allowedRoles) => {
     }
 
     const userRole = req.user.role;
-    const hasAccess = allowedRoles.some(role => {
+    const hasAccess = allowedRoles.some((role) => {
       if (role === ROLES.SUPER_ADMIN) return userRole === ROLES.SUPER_ADMIN;
       if (role === ROLES.ADMIN) return userRole === ROLES.ADMIN || userRole === ROLES.SUPER_ADMIN;
       return userRole === role;

@@ -1,6 +1,6 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { cn } from "../../lib/utils";
-import useAppStore from "../../store/useAppStore";
+import { NavLink, useLocation } from 'react-router-dom';
+import { cn } from '../../lib/utils';
+import useAppStore from '../../store/useAppStore';
 import {
   LayoutDashboard,
   Users,
@@ -16,21 +16,21 @@ import {
   ChevronLeft,
   ChevronRight,
   Boxes,
-} from "lucide-react";
+} from 'lucide-react';
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Users, label: "Suppliers", path: "/suppliers" },
-  { icon: UserCircle, label: "Customers", path: "/customers" },
-  { icon: Package, label: "Products", path: "/products" },
-  { icon: ShoppingCart, label: "Purchases", path: "/purchases" },
-  { icon: ShoppingBag, label: "Sales", path: "/sales" },
-  { icon: Wallet, label: "Expenses", path: "/expenses" },
-  { icon: Boxes, label: "Inventory", path: "/inventory" },
-  { icon: BarChart3, label: "Profit & Loss", path: "/profit-loss" },
-  { icon: LineChart, label: "Reports", path: "/reports" },
-  { icon: Building2, label: "Users", path: "/users" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+  { icon: Users, label: 'Suppliers', path: '/suppliers' },
+  { icon: UserCircle, label: 'Customers', path: '/customers' },
+  { icon: Package, label: 'Products', path: '/products' },
+  { icon: ShoppingCart, label: 'Purchases', path: '/purchases' },
+  { icon: ShoppingBag, label: 'Sales', path: '/sales' },
+  { icon: Wallet, label: 'Expenses', path: '/expenses' },
+  { icon: Boxes, label: 'Inventory', path: '/inventory' },
+  { icon: BarChart3, label: 'Profit & Loss', path: '/profit-loss' },
+  { icon: LineChart, label: 'Reports', path: '/reports' },
+  { icon: Building2, label: 'Users', path: '/users' },
+  { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
 function Sidebar() {
@@ -40,20 +40,27 @@ function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen bg-card border-r transition-all duration-300",
-        sidebarOpen ? "w-64" : "w-16"
+        'fixed left-0 top-0 z-40 h-screen bg-card border-r transition-all duration-300',
+        sidebarOpen ? 'w-64' : 'w-16'
       )}
     >
       <div className="flex h-full flex-col">
-        <div className={cn("flex h-14 items-center border-b px-4", sidebarOpen ? "justify-between" : "justify-center")}>
-          {sidebarOpen && (
-            <span className="font-bold text-lg truncate">Rimon Medi</span>
+        <div
+          className={cn(
+            'flex h-14 items-center border-b px-4',
+            sidebarOpen ? 'justify-between' : 'justify-center'
           )}
+        >
+          {sidebarOpen && <span className="font-bold text-lg truncate">Rimon Medi</span>}
           <button
             onClick={toggleSidebar}
             className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center"
           >
-            {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {sidebarOpen ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
           </button>
         </div>
 
@@ -64,9 +71,11 @@ function Sidebar() {
               to={item.path}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                  isActive ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground",
-                  !sidebarOpen && "justify-center px-2"
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                  isActive
+                    ? 'bg-accent text-accent-foreground font-medium'
+                    : 'text-muted-foreground',
+                  !sidebarOpen && 'justify-center px-2'
                 )
               }
               title={item.label}

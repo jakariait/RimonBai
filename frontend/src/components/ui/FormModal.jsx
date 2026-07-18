@@ -1,7 +1,7 @@
-import { Modal } from "./Modal";
-import { Button } from "./Button";
+import { Modal } from './Modal';
+import { Button } from './Button';
 
-function FormModal({ open, onClose, title, onSubmit, children, isLoading, size = "md" }) {
+function FormModal({ open, onClose, title, onSubmit, children, isLoading, size = 'md' }) {
   return (
     <Modal open={open} onClose={onClose} title={title} size={size}>
       <form onSubmit={onSubmit} className="space-y-4">

@@ -1,33 +1,37 @@
-import { useEffect, useRef } from "react";
-import { cn } from "../../lib/utils";
-import { X } from "lucide-react";
-import { Button } from "./Button";
+import { useEffect, useRef } from 'react';
+import { cn } from '../../lib/utils';
+import { X } from 'lucide-react';
+import { Button } from './Button';
 
-function Modal({ open, onClose, title, children, size = "md", className }) {
+function Modal({ open, onClose, title, children, size = 'md', className }) {
   const overlayRef = useRef(null);
 
   useEffect(() => {
     if (open) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     }
-    return () => { document.body.style.overflow = "unset"; };
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [open]);
 
   useEffect(() => {
-    const handleEsc = (e) => { if (e.key === "Escape") onClose?.(); };
-    if (open) window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    if (open) window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, [open, onClose]);
 
   if (!open) return null;
 
   const sizes = {
-    sm: "max-w-md",
-    md: "max-w-2xl",
-    lg: "max-w-4xl",
-    xl: "max-w-6xl",
+    sm: 'max-w-md',
+    md: 'max-w-2xl',
+    lg: 'max-w-4xl',
+    xl: 'max-w-6xl',
   };
 
   return (
@@ -35,11 +39,13 @@ function Modal({ open, onClose, title, children, size = "md", className }) {
       <div
         ref={overlayRef}
         className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
-        onClick={(e) => { if (e.target === overlayRef.current) onClose?.(); }}
+        onClick={(e) => {
+          if (e.target === overlayRef.current) onClose?.();
+        }}
       />
       <div
         className={cn(
-          "relative w-full mx-4 bg-background rounded-lg border shadow-xl animate-slide-up max-h-[90vh] overflow-y-auto",
+          'relative w-full mx-4 bg-background rounded-lg border shadow-xl animate-slide-up max-h-[90vh] overflow-y-auto',
           sizes[size],
           className
         )}

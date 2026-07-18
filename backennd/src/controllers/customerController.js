@@ -31,4 +31,11 @@ const getCustomerLedger = async (req, res) => {
   sendSuccess(res, result, 'Customer ledger fetched successfully');
 };
 
-module.exports = { createCustomer, getCustomers, getCustomerById, updateCustomer, deleteCustomer, getCustomerLedger };
+module.exports = {
+  createCustomer,
+  getCustomers,
+  getCustomerById,
+  updateCustomer,
+  deleteCustomer,
+  getCustomerLedger,
+};

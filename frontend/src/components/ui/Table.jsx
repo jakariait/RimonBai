@@ -1,8 +1,16 @@
-import { useState, useMemo } from "react";
-import { cn } from "../../lib/utils";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
-import { Button } from "./Button";
-import { Input } from "./Input";
+import { useState, useMemo } from 'react';
+import { cn } from '../../lib/utils';
+import {
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+} from 'lucide-react';
+import { Button } from './Button';
+import { Input } from './Input';
 
 function DataTable({
   columns,
@@ -11,11 +19,11 @@ function DataTable({
   onRowClick,
   pageSize = 10,
   searchable = true,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = 'Search...',
   exportable = true,
 }) {
-  const [search, setSearch] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [search, setSearch] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredData = useMemo(() => {
@@ -35,8 +43,8 @@ function DataTable({
       const bVal = b[sortConfig.key];
       if (aVal == null) return 1;
       if (bVal == null) return -1;
-      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
   }, [filteredData, sortConfig]);
@@ -47,21 +55,19 @@ function DataTable({
   const handleSort = (key) => {
     setSortConfig((prev) => ({
       key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
     }));
   };
 
   const exportCSV = () => {
-    const headers = columns.map((c) => c.header).join(",");
-    const rows = data.map((row) =>
-      columns.map((col) => `"${row[col.accessor] || ""}"`).join(",")
-    );
-    const csv = [headers, ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const headers = columns.map((c) => c.header).join(',');
+    const rows = data.map((row) => columns.map((col) => `"${row[col.accessor] || ''}"`).join(','));
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "export.csv";
+    a.download = 'export.csv';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -75,7 +81,10 @@ function DataTable({
             <Input
               placeholder={searchPlaceholder}
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
               className="pl-9"
             />
           </div>
@@ -96,24 +105,23 @@ function DataTable({
                 <th
                   key={col.accessor}
                   className={cn(
-                    "h-10 px-4 text-left font-medium text-muted-foreground",
-                    col.sortable !== false && "cursor-pointer select-none hover:text-foreground"
+                    'h-10 px-4 text-left font-medium text-muted-foreground',
+                    col.sortable !== false && 'cursor-pointer select-none hover:text-foreground'
                   )}
                   onClick={() => col.sortable !== false && handleSort(col.accessor)}
                 >
                   <div className="flex items-center gap-1">
                     {col.header}
-                    {col.sortable !== false && (
-                      sortConfig.key === col.accessor ? (
-                        sortConfig.direction === "asc" ? (
+                    {col.sortable !== false &&
+                      (sortConfig.key === col.accessor ? (
+                        sortConfig.direction === 'asc' ? (
                           <ChevronUp className="h-4 w-4" />
                         ) : (
                           <ChevronDown className="h-4 w-4" />
                         )
                       ) : (
                         <ChevronsUpDown className="h-4 w-4 opacity-30" />
-                      )
-                    )}
+                      ))}
                   </div>
                 </th>
               ))}
@@ -132,7 +140,10 @@ function DataTable({
               ))
             ) : paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-12 text-center text-muted-foreground">
+                <td
+                  colSpan={columns.length}
+                  className="px-4 py-12 text-center text-muted-foreground"
+                >
                   No data found
                 </td>
               </tr>
@@ -141,8 +152,8 @@ function DataTable({
                 <tr
                   key={row._id || i}
                   className={cn(
-                    "border-b transition-colors hover:bg-muted/50",
-                    onRowClick && "cursor-pointer"
+                    'border-b transition-colors hover:bg-muted/50',
+                    onRowClick && 'cursor-pointer'
                   )}
                   onClick={() => onRowClick?.(row)}
                 >

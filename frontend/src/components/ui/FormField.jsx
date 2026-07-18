@@ -1,4 +1,4 @@
-import { Label } from "./Label";
+import { Label } from './Label';
 
 function FormField({ label, name, error, children, required }) {
   return (

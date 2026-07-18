@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "../lib/api";
-import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../lib/api';
+import { toast } from 'sonner';
 
 const defaultQueryFn = async ({ queryKey }) => {
   const [url, params] = queryKey;
@@ -24,11 +24,11 @@ export function useCreate(url, options = {}) {
       return data;
     },
     onSuccess: (data) => {
-      toast.success(data?.message || "Created successfully");
+      toast.success(data?.message || 'Created successfully');
       options?.invalidate && queryClient.invalidateQueries({ queryKey: [options.invalidate] });
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 }
@@ -41,11 +41,11 @@ export function useUpdate(url, options = {}) {
       return data;
     },
     onSuccess: (data) => {
-      toast.success(data?.message || "Updated successfully");
+      toast.success(data?.message || 'Updated successfully');
       options?.invalidate && queryClient.invalidateQueries({ queryKey: [options.invalidate] });
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 }
@@ -58,11 +58,11 @@ export function useDelete(url, options = {}) {
       return data;
     },
     onSuccess: (data) => {
-      toast.success(data?.message || "Deleted successfully");
+      toast.success(data?.message || 'Deleted successfully');
       options?.invalidate && queryClient.invalidateQueries({ queryKey: [options.invalidate] });
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 }

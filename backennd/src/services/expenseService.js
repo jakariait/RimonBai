@@ -66,4 +66,11 @@ const getExpenseReports = async (startDate, endDate) => {
   return { reports, total };
 };
 
-module.exports = { createExpense, getExpenses, getExpenseById, updateExpense, deleteExpense, getExpenseReports };
+module.exports = {
+  createExpense,
+  getExpenses,
+  getExpenseById,
+  updateExpense,
+  deleteExpense,
+  getExpenseReports,
+};

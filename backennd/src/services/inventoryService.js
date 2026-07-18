@@ -8,10 +8,15 @@ const getInventorySummary = async () => {
 
   const totalProducts = products.length;
   const totalStock = products.reduce((sum, p) => sum + p.currentStock, 0);
-  const inventoryValue = products.reduce((sum, p) => sum + (p.currentStock * p.purchasePrice), 0);
-  const inventoryValueBySelling = products.reduce((sum, p) => sum + (p.currentStock * p.sellingPrice), 0);
-  const lowStockProducts = products.filter(p => p.currentStock <= p.minimumStock && p.currentStock > 0);
-  const outOfStockProducts = products.filter(p => p.currentStock === 0);
+  const inventoryValue = products.reduce((sum, p) => sum + p.currentStock * p.purchasePrice, 0);
+  const inventoryValueBySelling = products.reduce(
+    (sum, p) => sum + p.currentStock * p.sellingPrice,
+    0
+  );
+  const lowStockProducts = products.filter(
+    (p) => p.currentStock <= p.minimumStock && p.currentStock > 0
+  );
+  const outOfStockProducts = products.filter((p) => p.currentStock === 0);
 
   return {
     totalProducts,
@@ -29,7 +34,9 @@ const getLowStockProducts = async () => {
   return Product.find({
     $expr: { $lte: ['$currentStock', '$minimumStock'] },
     currentStock: { $gt: 0 },
-  }).populate('category', 'name').sort({ currentStock: 1 });
+  })
+    .populate('category', 'name')
+    .sort({ currentStock: 1 });
 };
 
 const getOutOfStockProducts = async () => {
@@ -70,4 +77,9 @@ const getStockMovementsReport = async (query = {}) => {
   };
 };
 
-module.exports = { getInventorySummary, getLowStockProducts, getOutOfStockProducts, getStockMovementsReport };
+module.exports = {
+  getInventorySummary,
+  getLowStockProducts,
+  getOutOfStockProducts,
+  getStockMovementsReport,
+};

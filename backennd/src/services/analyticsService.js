@@ -108,8 +108,11 @@ const getDashboardStats = async (period = 'monthly', startDate, endDate) => {
   ]);
 
   const products = await Product.find();
-  const inventoryValue = products.reduce((sum, p) => sum + (p.currentStock * p.purchasePrice), 0);
-  const lowStockProducts = await Product.find({ $expr: { $lte: ['$currentStock', '$minimumStock'] }, currentStock: { $gt: 0 } }).limit(10);
+  const inventoryValue = products.reduce((sum, p) => sum + p.currentStock * p.purchasePrice, 0);
+  const lowStockProducts = await Product.find({
+    $expr: { $lte: ['$currentStock', '$minimumStock'] },
+    currentStock: { $gt: 0 },
+  }).limit(10);
 
   const recentSales = await Sale.find()
     .sort({ createdAt: -1 })
@@ -183,7 +186,9 @@ const getProfitLoss = async (period = 'monthly', startDate, endDate) => {
     {
       $group: {
         _id: null,
-        cogs: { $sum: { $multiply: ['$items.quantity', { $ifNull: ['$product.purchasePrice', 0] }] } },
+        cogs: {
+          $sum: { $multiply: ['$items.quantity', { $ifNull: ['$product.purchasePrice', 0] }] },
+        },
       },
     },
   ]);
@@ -219,7 +224,7 @@ const getProfitLoss = async (period = 'monthly', startDate, endDate) => {
     totalExpenses,
     netProfit: grossProfit - totalExpenses,
     netProfitMargin: revenue > 0 ? (((grossProfit - totalExpenses) / revenue) * 100).toFixed(2) : 0,
-    isLoss: (grossProfit - totalExpenses) < 0,
+    isLoss: grossProfit - totalExpenses < 0,
   };
 };
 

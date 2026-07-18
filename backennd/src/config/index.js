@@ -4,7 +4,7 @@ dotenv.config();
 const config = {
   port: parseInt(process.env.PORT, 10) || 5050,
   nodeEnv: process.env.NODE_ENV || 'development',
-  clientUrl: process.env.CLIENT_URL?.split(',').map(u => u.replace(/\/$/, '')) || [],
+  clientUrl: process.env.CLIENT_URL?.split(',').map((u) => u.replace(/\/$/, '')) || [],
   jwt: {
     secret: process.env.JWT_SECRET || 'fallback-secret',
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',

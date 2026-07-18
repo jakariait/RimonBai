@@ -31,7 +31,18 @@ const seed = async () => {
       console.log('Super Admin created: admin@rimonbai.com / admin123');
     }
 
-    const categories = ['Diagnostic Equipment', 'Surgical Instruments', 'Patient Monitoring', 'Lab Equipment', 'Medical Furniture', 'Consumables', ' implants', 'Orthopedic', 'Cardiology', 'Imaging'];
+    const categories = [
+      'Diagnostic Equipment',
+      'Surgical Instruments',
+      'Patient Monitoring',
+      'Lab Equipment',
+      'Medical Furniture',
+      'Consumables',
+      ' implants',
+      'Orthopedic',
+      'Cardiology',
+      'Imaging',
+    ];
     for (const name of categories) {
       const exists = await Category.findOne({ name });
       if (!exists) {

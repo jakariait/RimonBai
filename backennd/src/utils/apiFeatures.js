@@ -7,7 +7,7 @@ class APIFeatures {
   search(searchableFields = []) {
     const search = this.queryString.search;
     if (search && searchableFields.length > 0) {
-      const searchConditions = searchableFields.map(field => ({
+      const searchConditions = searchableFields.map((field) => ({
         [field]: { $regex: search, $options: 'i' },
       }));
       this.query = this.query.find({ $or: searchConditions });
@@ -18,7 +18,7 @@ class APIFeatures {
   filter() {
     const queryObj = { ...this.queryString };
     const excludedFields = ['search', 'page', 'limit', 'sort', 'fields'];
-    excludedFields.forEach(field => delete queryObj[field]);
+    excludedFields.forEach((field) => delete queryObj[field]);
 
     if (Object.keys(queryObj).length > 0) {
       this.query = this.query.find(queryObj);

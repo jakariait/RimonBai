@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useFetch } from "../../hooks/useQueries";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
-import { formatCurrency } from "../../lib/utils";
+import { useState } from 'react';
+import { useFetch } from '../../hooks/useQueries';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { formatCurrency } from '../../lib/utils';
 import {
   ResponsiveContainer,
   BarChart,
@@ -15,21 +15,21 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-} from "recharts";
+} from 'recharts';
 
-const COLORS = ["#3b82f6", "#f59e0b", "#ef4444", "#10b981", "#8b5cf6", "#ec4899", "#6366f1"];
+const COLORS = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#6366f1'];
 
 function ProfitLoss() {
-  const [period, setPeriod] = useState("monthly");
-  const [customRange, setCustomRange] = useState({ start: "", end: "" });
+  const [period, setPeriod] = useState('monthly');
+  const [customRange, setCustomRange] = useState({ start: '', end: '' });
 
   const params = { period };
-  if (period === "custom" && customRange.start && customRange.end) {
+  if (period === 'custom' && customRange.start && customRange.end) {
     params.startDate = customRange.start;
     params.endDate = customRange.end;
   }
 
-  const { data, isLoading } = useFetch("/analytics/profit-loss", params);
+  const { data, isLoading } = useFetch('/analytics/profit-loss', params);
 
   const pl = data?.data;
 
@@ -46,18 +46,23 @@ function ProfitLoss() {
     );
   }
 
-  const pieData = pl?.expenses?.map((e) => ({
-    name: e._id,
-    value: e.amount,
-  })) || [];
+  const pieData =
+    pl?.expenses?.map((e) => ({
+      name: e._id,
+      value: e.amount,
+    })) || [];
 
   const summaryCards = [
-    { label: "Revenue", value: pl?.revenue || 0, color: "text-green-600" },
-    { label: "COGS", value: pl?.cogs || 0, color: "text-red-600" },
-    { label: "Gross Profit", value: pl?.grossProfit || 0, color: "text-blue-600" },
-    { label: "Total Expenses", value: pl?.totalExpenses || 0, color: "text-orange-600" },
-    { label: "Net Profit", value: pl?.netProfit || 0, color: pl?.isLoss ? "text-red-600" : "text-green-600" },
-    { label: "Margin", value: `${pl?.netProfitMargin || 0}%`, color: "text-purple-600" },
+    { label: 'Revenue', value: pl?.revenue || 0, color: 'text-green-600' },
+    { label: 'COGS', value: pl?.cogs || 0, color: 'text-red-600' },
+    { label: 'Gross Profit', value: pl?.grossProfit || 0, color: 'text-blue-600' },
+    { label: 'Total Expenses', value: pl?.totalExpenses || 0, color: 'text-orange-600' },
+    {
+      label: 'Net Profit',
+      value: pl?.netProfit || 0,
+      color: pl?.isLoss ? 'text-red-600' : 'text-green-600',
+    },
+    { label: 'Margin', value: `${pl?.netProfitMargin || 0}%`, color: 'text-purple-600' },
   ];
 
   return (
@@ -65,17 +70,17 @@ function ProfitLoss() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Profit & Loss</h1>
         <div className="flex gap-2">
-          {["daily", "weekly", "monthly", "yearly"].map((p) => (
+          {['daily', 'weekly', 'monthly', 'yearly'].map((p) => (
             <Button
               key={p}
-              variant={period === p ? "default" : "outline"}
+              variant={period === p ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPeriod(p)}
             >
               {p.charAt(0).toUpperCase() + p.slice(1)}
             </Button>
           ))}
-          {period === "custom" && (
+          {period === 'custom' && (
             <div className="flex gap-2">
               <input
                 type="date"
@@ -100,7 +105,7 @@ function ProfitLoss() {
             <CardContent className="p-6">
               <p className="text-sm text-muted-foreground">{card.label}</p>
               <p className={`text-2xl font-bold ${card.color}`}>
-                {card.label === "Margin" ? card.value : formatCurrency(card.value)}
+                {card.label === 'Margin' ? card.value : formatCurrency(card.value)}
               </p>
             </CardContent>
           </Card>
@@ -118,11 +123,11 @@ function ProfitLoss() {
                 <BarChart
                   data={[
                     {
-                      name: "Summary",
+                      name: 'Summary',
                       Revenue: pl?.revenue || 0,
                       COGS: pl?.cogs || 0,
                       Expenses: pl?.totalExpenses || 0,
-                      "Net Profit": pl?.netProfit || 0,
+                      'Net Profit': pl?.netProfit || 0,
                     },
                   ]}
                 >

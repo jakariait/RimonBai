@@ -9,13 +9,13 @@ const createSale = async (data, userId) => {
   const count = await Sale.countDocuments();
   const invoiceNumber = generateInvoiceNumber('INV', count + 1);
 
-  const items = data.items.map(item => ({
+  const items = data.items.map((item) => ({
     ...item,
     totalPrice: item.quantity * item.unitPrice,
   }));
 
   const totals = calculateTotals(
-    items.map(i => ({ quantity: i.quantity, unitCost: i.unitPrice })),
+    items.map((i) => ({ quantity: i.quantity, unitCost: i.unitPrice })),
     data.discount,
     data.taxRate,
     data.deliveryCharge,
@@ -67,18 +67,23 @@ const createSale = async (data, userId) => {
   }
 
   await Customer.findByIdAndUpdate(data.customer, {
-    $inc: { totalSales: totals.grandTotal, totalPaid: data.paidAmount || 0, dueBalance: sale.dueAmount },
+    $inc: {
+      totalSales: totals.grandTotal,
+      totalPaid: data.paidAmount || 0,
+      dueBalance: sale.dueAmount,
+    },
   });
 
-  return (await Sale.findById(sale._id)
+  return await Sale.findById(sale._id)
     .populate('customer', 'name company phone')
-    .populate('items.product', 'productName sku sellingPrice'));
+    .populate('items.product', 'productName sku sellingPrice');
 };
 
 const getSales = async (query) => {
-  const features = new APIFeatures(Sale.find()
-    .populate('customer', 'name company phone')
-    .populate('items.product', 'productName sku'),
+  const features = new APIFeatures(
+    Sale.find()
+      .populate('customer', 'name company phone')
+      .populate('items.product', 'productName sku'),
     query
   )
     .search(['invoiceNumber'])

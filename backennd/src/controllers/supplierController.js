@@ -31,4 +31,11 @@ const getSupplierLedger = async (req, res) => {
   sendSuccess(res, result, 'Supplier ledger fetched successfully');
 };
 
-module.exports = { createSupplier, getSuppliers, getSupplierById, updateSupplier, deleteSupplier, getSupplierLedger };
+module.exports = {
+  createSupplier,
+  getSuppliers,
+  getSupplierById,
+  updateSupplier,
+  deleteSupplier,
+  getSupplierLedger,
+};

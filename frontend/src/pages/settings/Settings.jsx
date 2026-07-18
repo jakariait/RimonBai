@@ -1,28 +1,23 @@
-import { useState, useEffect } from "react";
-import api from "../../lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { FormField } from "../../components/ui/FormField";
-import { toast } from "sonner";
-import { useFetch } from "../../hooks/useQueries";
-import useAuthStore from "../../store/useAuthStore";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { changePasswordSchema } from "../../lib/validations";
-import {
-  Building2,
-  FileText,
-  Key,
-  Save,
-} from "lucide-react";
+import { useState, useEffect } from 'react';
+import api from '../../lib/api';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { FormField } from '../../components/ui/FormField';
+import { toast } from 'sonner';
+import { useFetch } from '../../hooks/useQueries';
+import useAuthStore from '../../store/useAuthStore';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { changePasswordSchema } from '../../lib/validations';
+import { Building2, FileText, Key, Save } from 'lucide-react';
 
 function Settings() {
-  const [activeTab, setActiveTab] = useState("business");
+  const [activeTab, setActiveTab] = useState('business');
   const { loading } = useAuthStore();
 
-  const { data: businessData, refetch: refetchBusiness } = useFetch("/settings/business");
-  const { data: invoiceData, refetch: refetchInvoice } = useFetch("/settings/invoice");
+  const { data: businessData, refetch: refetchBusiness } = useFetch('/settings/business');
+  const { data: invoiceData, refetch: refetchInvoice } = useFetch('/settings/invoice');
 
   const [businessForm, setBusinessForm] = useState({});
   const [invoiceForm, setInvoiceForm] = useState({});
@@ -38,22 +33,22 @@ function Settings() {
   const updateBusiness = async (e) => {
     e.preventDefault();
     try {
-      await api.put("/settings/business", businessForm);
-      toast.success("Business settings updated");
+      await api.put('/settings/business', businessForm);
+      toast.success('Business settings updated');
       refetchBusiness();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to update");
+      toast.error(err?.response?.data?.message || 'Failed to update');
     }
   };
 
   const updateInvoice = async (e) => {
     e.preventDefault();
     try {
-      await api.put("/settings/invoice", invoiceForm);
-      toast.success("Invoice settings updated");
+      await api.put('/settings/invoice', invoiceForm);
+      toast.success('Invoice settings updated');
       refetchInvoice();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to update");
+      toast.error(err?.response?.data?.message || 'Failed to update');
     }
   };
 
@@ -68,21 +63,21 @@ function Settings() {
 
   const changePassword = async (data) => {
     try {
-      await api.put("/auth/change-password", {
+      await api.put('/auth/change-password', {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
-      toast.success("Password changed successfully");
+      toast.success('Password changed successfully');
       reset();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to change password");
+      toast.error(err?.response?.data?.message || 'Failed to change password');
     }
   };
 
   const tabs = [
-    { id: "business", label: "Business Info", icon: Building2 },
-    { id: "invoice", label: "Invoice Settings", icon: FileText },
-    { id: "password", label: "Change Password", icon: Key },
+    { id: 'business', label: 'Business Info', icon: Building2 },
+    { id: 'invoice', label: 'Invoice Settings', icon: FileText },
+    { id: 'password', label: 'Change Password', icon: Key },
   ];
 
   return (
@@ -96,7 +91,7 @@ function Settings() {
         {tabs.map((tab) => (
           <Button
             key={tab.id}
-            variant={activeTab === tab.id ? "default" : "outline"}
+            variant={activeTab === tab.id ? 'default' : 'outline'}
             size="sm"
             onClick={() => setActiveTab(tab.id)}
           >
@@ -106,7 +101,7 @@ function Settings() {
         ))}
       </div>
 
-      {activeTab === "business" && (
+      {activeTab === 'business' && (
         <Card>
           <CardHeader>
             <CardTitle>Business Information</CardTitle>
@@ -115,38 +110,40 @@ function Settings() {
             <form onSubmit={updateBusiness} className="space-y-4 max-w-xl">
               <FormField label="Business Name">
                 <Input
-                  value={businessForm.businessName || ""}
-                  onChange={(e) => setBusinessForm({ ...businessForm, businessName: e.target.value })}
+                  value={businessForm.businessName || ''}
+                  onChange={(e) =>
+                    setBusinessForm({ ...businessForm, businessName: e.target.value })
+                  }
                 />
               </FormField>
               <FormField label="Address">
                 <Input
-                  value={businessForm.address || ""}
+                  value={businessForm.address || ''}
                   onChange={(e) => setBusinessForm({ ...businessForm, address: e.target.value })}
                 />
               </FormField>
               <FormField label="Phone">
                 <Input
-                  value={businessForm.phone || ""}
+                  value={businessForm.phone || ''}
                   onChange={(e) => setBusinessForm({ ...businessForm, phone: e.target.value })}
                 />
               </FormField>
               <FormField label="Email">
                 <Input
                   type="email"
-                  value={businessForm.email || ""}
+                  value={businessForm.email || ''}
                   onChange={(e) => setBusinessForm({ ...businessForm, email: e.target.value })}
                 />
               </FormField>
               <FormField label="Website">
                 <Input
-                  value={businessForm.website || ""}
+                  value={businessForm.website || ''}
                   onChange={(e) => setBusinessForm({ ...businessForm, website: e.target.value })}
                 />
               </FormField>
               <FormField label="Tax ID">
                 <Input
-                  value={businessForm.taxId || ""}
+                  value={businessForm.taxId || ''}
                   onChange={(e) => setBusinessForm({ ...businessForm, taxId: e.target.value })}
                 />
               </FormField>
@@ -159,7 +156,7 @@ function Settings() {
         </Card>
       )}
 
-      {activeTab === "invoice" && (
+      {activeTab === 'invoice' && (
         <Card>
           <CardHeader>
             <CardTitle>Invoice Settings</CardTitle>
@@ -168,7 +165,7 @@ function Settings() {
             <form onSubmit={updateInvoice} className="space-y-4 max-w-xl">
               <FormField label="Invoice Prefix">
                 <Input
-                  value={invoiceForm.prefix || ""}
+                  value={invoiceForm.prefix || ''}
                   onChange={(e) => setInvoiceForm({ ...invoiceForm, prefix: e.target.value })}
                 />
               </FormField>
@@ -176,25 +173,34 @@ function Settings() {
                 <Input
                   type="number"
                   value={invoiceForm.defaultTaxRate || 0}
-                  onChange={(e) => setInvoiceForm({ ...invoiceForm, defaultTaxRate: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setInvoiceForm({
+                      ...invoiceForm,
+                      defaultTaxRate: parseFloat(e.target.value) || 0,
+                    })
+                  }
                 />
               </FormField>
               <FormField label="Default Payment Terms">
                 <Input
-                  value={invoiceForm.defaultPaymentTerms || ""}
-                  onChange={(e) => setInvoiceForm({ ...invoiceForm, defaultPaymentTerms: e.target.value })}
+                  value={invoiceForm.defaultPaymentTerms || ''}
+                  onChange={(e) =>
+                    setInvoiceForm({ ...invoiceForm, defaultPaymentTerms: e.target.value })
+                  }
                 />
               </FormField>
               <FormField label="Footer Text">
                 <Input
-                  value={invoiceForm.footerText || ""}
+                  value={invoiceForm.footerText || ''}
                   onChange={(e) => setInvoiceForm({ ...invoiceForm, footerText: e.target.value })}
                 />
               </FormField>
               <FormField label="Terms & Conditions">
                 <Input
-                  value={invoiceForm.termsAndConditions || ""}
-                  onChange={(e) => setInvoiceForm({ ...invoiceForm, termsAndConditions: e.target.value })}
+                  value={invoiceForm.termsAndConditions || ''}
+                  onChange={(e) =>
+                    setInvoiceForm({ ...invoiceForm, termsAndConditions: e.target.value })
+                  }
                 />
               </FormField>
               <Button type="submit">
@@ -206,21 +212,44 @@ function Settings() {
         </Card>
       )}
 
-      {activeTab === "password" && (
+      {activeTab === 'password' && (
         <Card>
           <CardHeader>
             <CardTitle>Change Password</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(changePassword)} className="space-y-4 max-w-xl">
-              <FormField label="Current Password" name="currentPassword" error={errors.currentPassword?.message} required>
-                <Input type="password" {...register("currentPassword")} placeholder="Current password" />
+              <FormField
+                label="Current Password"
+                name="currentPassword"
+                error={errors.currentPassword?.message}
+                required
+              >
+                <Input
+                  type="password"
+                  {...register('currentPassword')}
+                  placeholder="Current password"
+                />
               </FormField>
-              <FormField label="New Password" name="newPassword" error={errors.newPassword?.message} required>
-                <Input type="password" {...register("newPassword")} placeholder="New password" />
+              <FormField
+                label="New Password"
+                name="newPassword"
+                error={errors.newPassword?.message}
+                required
+              >
+                <Input type="password" {...register('newPassword')} placeholder="New password" />
               </FormField>
-              <FormField label="Confirm Password" name="confirmPassword" error={errors.confirmPassword?.message} required>
-                <Input type="password" {...register("confirmPassword")} placeholder="Confirm password" />
+              <FormField
+                label="Confirm Password"
+                name="confirmPassword"
+                error={errors.confirmPassword?.message}
+                required
+              >
+                <Input
+                  type="password"
+                  {...register('confirmPassword')}
+                  placeholder="Confirm password"
+                />
               </FormField>
               <Button type="submit" isLoading={loading}>
                 <Key className="h-4 w-4 mr-2" />

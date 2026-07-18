@@ -38,7 +38,9 @@ const updateCustomer = async (id, data) => {
 const deleteCustomer = async (id) => {
   const hasSales = await Sale.exists({ customer: id });
   if (hasSales) {
-    throw Object.assign(new Error('Cannot delete customer with existing sales'), { statusCode: 400 });
+    throw Object.assign(new Error('Cannot delete customer with existing sales'), {
+      statusCode: 400,
+    });
   }
   const customer = await Customer.findByIdAndDelete(id);
   if (!customer) {
@@ -58,12 +60,10 @@ const getCustomerLedger = async (id, query = {}) => {
     .populate('items.product', 'productName')
     .lean();
 
-  const payments = await Payment.find({ customer: id })
-    .sort({ paymentDate: -1 })
-    .lean();
+  const payments = await Payment.find({ customer: id }).sort({ paymentDate: -1 }).lean();
 
   const entries = [
-    ...sales.map(s => ({
+    ...sales.map((s) => ({
       date: s.saleDate,
       type: 'sale',
       reference: s.invoiceNumber,
@@ -71,7 +71,7 @@ const getCustomerLedger = async (id, query = {}) => {
       credit: 0,
       balance: 0,
     })),
-    ...payments.map(p => ({
+    ...payments.map((p) => ({
       date: p.paymentDate,
       type: 'payment',
       reference: p._id,
@@ -82,10 +82,13 @@ const getCustomerLedger = async (id, query = {}) => {
   ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
   let balance = 0;
-  const ledgerEntries = entries.reverse().map(e => {
-    balance += e.debit - e.credit;
-    return { ...e, balance };
-  }).reverse();
+  const ledgerEntries = entries
+    .reverse()
+    .map((e) => {
+      balance += e.debit - e.credit;
+      return { ...e, balance };
+    })
+    .reverse();
 
   const start = (page - 1) * limit;
   const paginatedEntries = ledgerEntries.slice(start, start + limit);
@@ -103,4 +106,11 @@ const getCustomerLedger = async (id, query = {}) => {
   };
 };
 
-module.exports = { createCustomer, getCustomers, getCustomerById, updateCustomer, deleteCustomer, getCustomerLedger };
+module.exports = {
+  createCustomer,
+  getCustomers,
+  getCustomerById,
+  updateCustomer,
+  deleteCustomer,
+  getCustomerLedger,
+};

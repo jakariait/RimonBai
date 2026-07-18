@@ -10,7 +10,7 @@ const validate = (schema) => async (req, res, next) => {
     req.params = parsed.params;
     next();
   } catch (error) {
-    const message = error.errors?.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const message = error.errors?.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
     return res.status(400).json({ success: false, message: message || 'Validation failed' });
   }
 };
@@ -20,7 +20,7 @@ const validateBody = (schema) => async (req, res, next) => {
     req.body = await schema.parseAsync(req.body);
     next();
   } catch (error) {
-    const message = error.errors?.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const message = error.errors?.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
     return res.status(400).json({ success: false, message: message || 'Validation failed' });
   }
 };

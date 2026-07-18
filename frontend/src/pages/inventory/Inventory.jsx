@@ -1,16 +1,19 @@
-import { useFetch } from "../../hooks/useQueries";
-import { PageHeader } from "../../components/ui/PageHeader";
-import { StatCard } from "../../components/ui/StatCard";
-import { DataTable } from "../../components/ui/Table";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
-import { Badge } from "../../components/ui/Badge";
-import { formatCurrency } from "../../lib/utils";
-import { Package, AlertTriangle, XCircle, DollarSign } from "lucide-react";
+import { useFetch } from '../../hooks/useQueries';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { StatCard } from '../../components/ui/StatCard';
+import { DataTable } from '../../components/ui/Table';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { formatCurrency } from '../../lib/utils';
+import { Package, AlertTriangle, XCircle, DollarSign } from 'lucide-react';
 
 function Inventory() {
-  const { data: summaryData, isLoading: summaryLoading } = useFetch("/inventory/summary");
-  const { data: productsData, isLoading: productsLoading } = useFetch("/products", { page: 1, limit: 500 });
-  const { data: movementsData } = useFetch("/inventory/movements", { page: 1, limit: 100 });
+  const { data: summaryData, isLoading: summaryLoading } = useFetch('/inventory/summary');
+  const { data: productsData, isLoading: productsLoading } = useFetch('/products', {
+    page: 1,
+    limit: 500,
+  });
+  const { data: movementsData } = useFetch('/inventory/movements', { page: 1, limit: 100 });
 
   const summary = summaryData?.data;
   const products = productsData?.data || [];
@@ -20,11 +23,19 @@ function Inventory() {
     <div className="space-y-6">
       <PageHeader title="Inventory" action={false} />
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <StatCard title="Total Products" value={summary?.totalProducts || 0} icon={Package} />
         <StatCard title="Total Stock" value={summary?.totalStock || 0} icon={Package} />
-        <StatCard title="Inventory Value" value={formatCurrency(summary?.inventoryValue || 0)} icon={DollarSign} />
-        <StatCard title="Low Stock Items" value={summary?.lowStockCount || 0} icon={AlertTriangle} />
+        <StatCard
+          title="Inventory Value"
+          value={formatCurrency(summary?.inventoryValue || 0)}
+          icon={DollarSign}
+        />
+        <StatCard
+          title="Low Stock Items"
+          value={summary?.lowStockCount || 0}
+          icon={AlertTriangle}
+        />
       </div>
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
@@ -40,13 +51,13 @@ function Inventory() {
               searchable={false}
               exportable={false}
               columns={[
-                { header: "Product", accessor: "productName" },
-                { header: "SKU", accessor: "sku" },
-                { header: "Stock", accessor: "currentStock" },
-                { header: "Min", accessor: "minimumStock" },
+                { header: 'Product', accessor: 'productName' },
+                { header: 'SKU', accessor: 'sku' },
+                { header: 'Stock', accessor: 'currentStock' },
+                { header: 'Min', accessor: 'minimumStock' },
                 {
-                  header: "Status",
-                  accessor: "currentStock",
+                  header: 'Status',
+                  accessor: 'currentStock',
                   cell: (row) =>
                     row.currentStock === 0 ? (
                       <Badge variant="destructive">Out of Stock</Badge>
@@ -73,9 +84,13 @@ function Inventory() {
               searchable={false}
               exportable={false}
               columns={[
-                { header: "Product", accessor: "productName" },
-                { header: "SKU", accessor: "sku" },
-                { header: "Category", accessor: "category", cell: (row) => row.category?.name || "N/A" },
+                { header: 'Product', accessor: 'productName' },
+                { header: 'SKU', accessor: 'sku' },
+                {
+                  header: 'Category',
+                  accessor: 'category',
+                  cell: (row) => row.category?.name || 'N/A',
+                },
               ]}
               data={products.filter((p) => p.currentStock === 0)}
               loading={productsLoading}
@@ -92,31 +107,27 @@ function Inventory() {
           <DataTable
             columns={[
               {
-                header: "Product",
-                accessor: "product",
-                cell: (row) => row.product?.productName || "N/A",
+                header: 'Product',
+                accessor: 'product',
+                cell: (row) => row.product?.productName || 'N/A',
               },
               {
-                header: "Type",
-                accessor: "type",
+                header: 'Type',
+                accessor: 'type',
                 cell: (row) => (
                   <Badge
                     variant={
-                      row.type === "purchase"
-                        ? "success"
-                        : row.type === "sale"
-                        ? "info"
-                        : "warning"
+                      row.type === 'purchase' ? 'success' : row.type === 'sale' ? 'info' : 'warning'
                     }
                   >
                     {row.type}
                   </Badge>
                 ),
               },
-              { header: "Quantity", accessor: "quantity" },
-              { header: "Previous Stock", accessor: "previousStock" },
-              { header: "New Stock", accessor: "newStock" },
-              { header: "Notes", accessor: "notes" },
+              { header: 'Quantity', accessor: 'quantity' },
+              { header: 'Previous Stock', accessor: 'previousStock' },
+              { header: 'New Stock', accessor: 'newStock' },
+              { header: 'Notes', accessor: 'notes' },
             ]}
             data={movements}
             loading={summaryLoading}

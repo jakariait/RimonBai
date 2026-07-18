@@ -1,10 +1,10 @@
-import { useNavigate } from "react-router-dom";
-import useAuthStore from "../../store/useAuthStore";
-import useAppStore from "../../store/useAppStore";
-import { getInitials } from "../../lib/utils";
-import { Button } from "../ui/Button";
-import { Moon, Sun, LogOut, User } from "lucide-react";
-import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../../store/useAuthStore';
+import useAppStore from '../../store/useAppStore';
+import { getInitials } from '../../lib/utils';
+import { Button } from '../ui/Button';
+import { Moon, Sun, LogOut, User } from 'lucide-react';
+import { useState } from 'react';
 
 function Header() {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ function Header() {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    navigate('/login');
   };
 
   return (
@@ -23,9 +23,9 @@ function Header() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
-          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
 
         <div className="relative">
@@ -46,11 +46,15 @@ function Header() {
                 <div className="p-3 border-b">
                   <p className="text-sm font-medium">{user?.name}</p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{user?.role?.replace("_", " ")}</p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {user?.role?.replace('_', ' ')}
+                  </p>
                 </div>
                 <div className="p-1">
                   <button
-                    onClick={() => { setShowDropdown(false); }}
+                    onClick={() => {
+                      setShowDropdown(false);
+                    }}
                     className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent transition-colors"
                   >
                     <User className="h-4 w-4" />

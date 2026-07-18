@@ -37,4 +37,12 @@ const adjustStock = async (req, res) => {
   sendSuccess(res, product, 'Stock adjusted successfully');
 };
 
-module.exports = { createProduct, getProducts, getProductById, updateProduct, deleteProduct, getStockMovements, adjustStock };
+module.exports = {
+  createProduct,
+  getProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  getStockMovements,
+  adjustStock,
+};

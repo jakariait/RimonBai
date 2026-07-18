@@ -3,16 +3,12 @@ const User = require('../models/User');
 const config = require('../config');
 
 const generateTokens = (userId, role) => {
-  const accessToken = jwt.sign(
-    { id: userId, role },
-    config.jwt.secret,
-    { expiresIn: config.jwt.expiresIn }
-  );
-  const refreshToken = jwt.sign(
-    { id: userId },
-    config.jwt.refreshSecret,
-    { expiresIn: config.jwt.refreshExpiresIn }
-  );
+  const accessToken = jwt.sign({ id: userId, role }, config.jwt.secret, {
+    expiresIn: config.jwt.expiresIn,
+  });
+  const refreshToken = jwt.sign({ id: userId }, config.jwt.refreshSecret, {
+    expiresIn: config.jwt.refreshExpiresIn,
+  });
   return { accessToken, refreshToken };
 };
 
@@ -23,7 +19,9 @@ const login = async (email, password) => {
   }
 
   if (!user.isActive) {
-    throw Object.assign(new Error('Account is deactivated. Contact administrator.'), { statusCode: 401 });
+    throw Object.assign(new Error('Account is deactivated. Contact administrator.'), {
+      statusCode: 401,
+    });
   }
 
   const isMatch = await user.comparePassword(password);

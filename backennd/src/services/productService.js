@@ -49,7 +49,10 @@ const getProductById = async (id) => {
 };
 
 const updateProduct = async (id, data) => {
-  const product = await Product.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate('category', 'name');
+  const product = await Product.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true,
+  }).populate('category', 'name');
   if (!product) {
     throw Object.assign(new Error('Product not found'), { statusCode: 404 });
   }
@@ -120,4 +123,12 @@ const adjustStock = async (productId, quantity, notes, userId) => {
   return product;
 };
 
-module.exports = { createProduct, getProducts, getProductById, updateProduct, deleteProduct, getStockMovements, adjustStock };
+module.exports = {
+  createProduct,
+  getProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  getStockMovements,
+  adjustStock,
+};

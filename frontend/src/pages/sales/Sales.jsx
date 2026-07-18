@@ -1,43 +1,46 @@
-import { useState } from "react";
-import { useFetch, useCreate } from "../../hooks/useQueries";
-import { PageHeader } from "../../components/ui/PageHeader";
-import { DataTable } from "../../components/ui/Table";
-import { Modal } from "../../components/ui/Modal";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { Select } from "../../components/ui/Select";
-import { FormField } from "../../components/ui/FormField";
-import { Badge } from "../../components/ui/Badge";
-import { Card, CardContent } from "../../components/ui/Card";
-import { formatCurrency, formatDate } from "../../lib/utils";
-import { Plus, Trash2, Eye, FileText } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { useFetch, useCreate } from '../../hooks/useQueries';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { DataTable } from '../../components/ui/Table';
+import { Modal } from '../../components/ui/Modal';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
+import { FormField } from '../../components/ui/FormField';
+import { Badge } from '../../components/ui/Badge';
+import { Card, CardContent } from '../../components/ui/Card';
+import { formatCurrency, formatDate } from '../../lib/utils';
+import { Plus, Trash2, Eye, FileText } from 'lucide-react';
+import { toast } from 'sonner';
 
 const paymentMethods = [
-  { value: "Cash", label: "Cash" },
-  { value: "Bank Transfer", label: "Bank Transfer" },
-  { value: "Cheque", label: "Cheque" },
-  { value: "Card", label: "Card" },
-  { value: "Mobile Banking", label: "Mobile Banking" },
+  { value: 'Cash', label: 'Cash' },
+  { value: 'Bank Transfer', label: 'Bank Transfer' },
+  { value: 'Cheque', label: 'Cheque' },
+  { value: 'Card', label: 'Card' },
+  { value: 'Mobile Banking', label: 'Mobile Banking' },
 ];
 
 function Sales() {
   const [modalOpen, setModalOpen] = useState(false);
   const [detailModal, setDetailModal] = useState(null);
-  const [items, setItems] = useState([{ product: "", quantity: 1, unitPrice: 0 }]);
+  const [items, setItems] = useState([{ product: '', quantity: 1, unitPrice: 0 }]);
 
-  const { data: salesData, isLoading } = useFetch("/sales", { page: 1, limit: 100 });
-  const { data: customersData } = useFetch("/customers", { page: 1, limit: 200 });
-  const { data: productsData } = useFetch("/products", { page: 1, limit: 500 });
-  const createMutation = useCreate("/sales", { invalidate: "/sales" });
+  const { data: salesData, isLoading } = useFetch('/sales', { page: 1, limit: 100 });
+  const { data: customersData } = useFetch('/customers', { page: 1, limit: 200 });
+  const { data: productsData } = useFetch('/products', { page: 1, limit: 500 });
+  const createMutation = useCreate('/sales', { invalidate: '/sales' });
 
   const customers = customersData?.data || [];
   const products = productsData?.data || [];
 
   const customerOptions = customers.map((c) => ({ value: c._id, label: `${c.name} (${c.phone})` }));
-  const productOptions = products.map((p) => ({ value: p._id, label: `${p.productName} (${p.sku}) - ${formatCurrency(p.sellingPrice)}` }));
+  const productOptions = products.map((p) => ({
+    value: p._id,
+    label: `${p.productName} (${p.sku}) - ${formatCurrency(p.sellingPrice)}`,
+  }));
 
-  const addItem = () => setItems([...items, { product: "", quantity: 1, unitPrice: 0 }]);
+  const addItem = () => setItems([...items, { product: '', quantity: 1, unitPrice: 0 }]);
   const removeItem = (index) => {
     if (items.length === 1) return;
     setItems(items.filter((_, i) => i !== index));
@@ -47,7 +50,7 @@ function Sales() {
     const newItems = [...items];
     newItems[index][field] = value;
 
-    if (field === "product") {
+    if (field === 'product') {
       const product = products.find((p) => p._id === value);
       if (product) {
         newItems[index].unitPrice = product.sellingPrice;
@@ -79,28 +82,32 @@ function Sales() {
       })),
     };
 
-    if (!data.customer) return toast.error("Please select a customer");
-    if (items.some((i) => !i.product)) return toast.error("Please select products");
+    if (!data.customer) return toast.error('Please select a customer');
+    if (items.some((i) => !i.product)) return toast.error('Please select products');
 
     try {
       await createMutation.mutateAsync(data);
       setModalOpen(false);
-      setItems([{ product: "", quantity: 1, unitPrice: 0 }]);
+      setItems([{ product: '', quantity: 1, unitPrice: 0 }]);
     } catch {}
   };
 
   const printInvoice = (sale) => {
-    const printWindow = window.open("", "_blank");
+    const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const itemsHtml = sale.items.map((item) => `
+    const itemsHtml = sale.items
+      .map(
+        (item) => `
       <tr>
-        <td style="padding:8px;border-bottom:1px solid #eee">${item.product?.productName || "N/A"}</td>
+        <td style="padding:8px;border-bottom:1px solid #eee">${item.product?.productName || 'N/A'}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:center">${item.quantity}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${formatCurrency(item.unitPrice)}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${formatCurrency(item.totalPrice)}</td>
       </tr>
-    `).join("");
+    `
+      )
+      .join('');
 
     printWindow.document.write(`
       <html><head><title>Invoice ${sale.invoiceNumber}</title>
@@ -120,10 +127,10 @@ function Sales() {
           <p>Invoice #: ${sale.invoiceNumber}</p>
         </div>
         <table class="details">
-          <tr><td><strong>Customer:</strong> ${sale.customer?.name || "N/A"}</td></tr>
+          <tr><td><strong>Customer:</strong> ${sale.customer?.name || 'N/A'}</td></tr>
           <tr><td><strong>Date:</strong> ${formatDate(sale.saleDate)}</td></tr>
-          ${sale.customer?.phone ? `<tr><td><strong>Phone:</strong> ${sale.customer.phone}</td></tr>` : ""}
-          ${sale.customer?.address ? `<tr><td><strong>Address:</strong> ${sale.customer.address}</td></tr>` : ""}
+          ${sale.customer?.phone ? `<tr><td><strong>Phone:</strong> ${sale.customer.phone}</td></tr>` : ''}
+          ${sale.customer?.address ? `<tr><td><strong>Address:</strong> ${sale.customer.address}</td></tr>` : ''}
         </table>
         <table>
           <thead><tr><th>Product</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th></tr></thead>
@@ -131,9 +138,9 @@ function Sales() {
         </table>
         <div class="totals">
           <p><strong>Subtotal:</strong> ${formatCurrency(sale.subtotal)}</p>
-          ${sale.discount > 0 ? `<p><strong>Discount:</strong> -${formatCurrency(sale.discount)}</p>` : ""}
-          ${sale.taxAmount > 0 ? `<p><strong>Tax:</strong> ${formatCurrency(sale.taxAmount)}</p>` : ""}
-          ${sale.deliveryCharge > 0 ? `<p><strong>Delivery:</strong> ${formatCurrency(sale.deliveryCharge)}</p>` : ""}
+          ${sale.discount > 0 ? `<p><strong>Discount:</strong> -${formatCurrency(sale.discount)}</p>` : ''}
+          ${sale.taxAmount > 0 ? `<p><strong>Tax:</strong> ${formatCurrency(sale.taxAmount)}</p>` : ''}
+          ${sale.deliveryCharge > 0 ? `<p><strong>Delivery:</strong> ${formatCurrency(sale.deliveryCharge)}</p>` : ''}
           <p style="font-size:18px;font-weight:bold;border-top:2px solid #333;padding-top:8px">
             <strong>Grand Total:</strong> ${formatCurrency(sale.grandTotal)}
           </p>
@@ -155,31 +162,49 @@ function Sales() {
 
       <DataTable
         columns={[
-          { header: "Invoice #", accessor: "invoiceNumber" },
-          { header: "Customer", accessor: "customer", cell: (row) => row.customer?.name || "N/A" },
-          { header: "Total", accessor: "grandTotal", cell: (row) => formatCurrency(row.grandTotal) },
-          { header: "Paid", accessor: "paidAmount", cell: (row) => formatCurrency(row.paidAmount) },
-          { header: "Due", accessor: "dueAmount", cell: (row) => formatCurrency(row.dueAmount) },
-          { header: "Method", accessor: "paymentMethod" },
+          { header: 'Invoice #', accessor: 'invoiceNumber' },
+          { header: 'Customer', accessor: 'customer', cell: (row) => row.customer?.name || 'N/A' },
           {
-            header: "Status",
-            accessor: "status",
+            header: 'Total',
+            accessor: 'grandTotal',
+            cell: (row) => formatCurrency(row.grandTotal),
+          },
+          { header: 'Paid', accessor: 'paidAmount', cell: (row) => formatCurrency(row.paidAmount) },
+          { header: 'Due', accessor: 'dueAmount', cell: (row) => formatCurrency(row.dueAmount) },
+          { header: 'Method', accessor: 'paymentMethod' },
+          {
+            header: 'Status',
+            accessor: 'status',
             cell: (row) => {
               if (row.dueAmount === 0) return <Badge variant="success">Paid</Badge>;
               return <Badge variant="warning">Due</Badge>;
             },
           },
-          { header: "Date", accessor: "saleDate", cell: (row) => formatDate(row.saleDate) },
+          { header: 'Date', accessor: 'saleDate', cell: (row) => formatDate(row.saleDate) },
           {
-            header: "Actions",
-            accessor: "_id",
+            header: 'Actions',
+            accessor: '_id',
             sortable: false,
             cell: (row) => (
               <div className="flex gap-1">
-                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setDetailModal(row); }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDetailModal(row);
+                  }}
+                >
                   <Eye className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); printInvoice(row); }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    printInvoice(row);
+                  }}
+                >
                   <FileText className="h-4 w-4" />
                 </Button>
               </div>
@@ -226,7 +251,7 @@ function Sales() {
                   <div className="flex-1">
                     <Select
                       value={item.product}
-                      onChange={(e) => updateItem(i, "product", e.target.value)}
+                      onChange={(e) => updateItem(i, 'product', e.target.value)}
                       options={productOptions}
                       placeholder="Select product"
                     />
@@ -236,7 +261,7 @@ function Sales() {
                       type="number"
                       min="1"
                       value={item.quantity}
-                      onChange={(e) => updateItem(i, "quantity", parseInt(e.target.value) || 1)}
+                      onChange={(e) => updateItem(i, 'quantity', parseInt(e.target.value) || 1)}
                       placeholder="Qty"
                     />
                   </div>
@@ -245,7 +270,7 @@ function Sales() {
                       type="number"
                       step="0.01"
                       value={item.unitPrice}
-                      onChange={(e) => updateItem(i, "unitPrice", parseFloat(e.target.value) || 0)}
+                      onChange={(e) => updateItem(i, 'unitPrice', parseFloat(e.target.value) || 0)}
                       placeholder="Price"
                     />
                   </div>
@@ -268,13 +293,22 @@ function Sales() {
           </FormField>
 
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button type="submit" isLoading={createMutation.isPending}>Create Sale</Button>
+            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={createMutation.isPending}>
+              Create Sale
+            </Button>
           </div>
         </form>
       </Modal>
 
-      <Modal open={!!detailModal} onClose={() => setDetailModal(null)} title="Sale Details" size="lg">
+      <Modal
+        open={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Sale Details"
+        size="lg"
+      >
         {detailModal && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -309,7 +343,7 @@ function Sales() {
                 <tbody>
                   {detailModal.items?.map((item, i) => (
                     <tr key={i} className="border-b">
-                      <td className="py-2">{item.product?.productName || "N/A"}</td>
+                      <td className="py-2">{item.product?.productName || 'N/A'}</td>
                       <td className="text-right py-2">{item.quantity}</td>
                       <td className="text-right py-2">{formatCurrency(item.unitPrice)}</td>
                       <td className="text-right py-2">{formatCurrency(item.totalPrice)}</td>
@@ -320,13 +354,40 @@ function Sales() {
             </div>
 
             <div className="space-y-1 border-t pt-4">
-              <div className="flex justify-between text-sm"><span>Subtotal</span><span>{formatCurrency(detailModal.subtotal)}</span></div>
-              {detailModal.discount > 0 && <div className="flex justify-between text-sm"><span>Discount</span><span>-{formatCurrency(detailModal.discount)}</span></div>}
-              {detailModal.taxAmount > 0 && <div className="flex justify-between text-sm"><span>Tax</span><span>{formatCurrency(detailModal.taxAmount)}</span></div>}
-              {detailModal.deliveryCharge > 0 && <div className="flex justify-between text-sm"><span>Delivery</span><span>{formatCurrency(detailModal.deliveryCharge)}</span></div>}
-              <div className="flex justify-between font-bold text-lg"><span>Grand Total</span><span>{formatCurrency(detailModal.grandTotal)}</span></div>
-              <div className="flex justify-between text-sm"><span>Paid</span><span>{formatCurrency(detailModal.paidAmount)}</span></div>
-              <div className="flex justify-between text-sm"><span>Due</span><span className="text-destructive">{formatCurrency(detailModal.dueAmount)}</span></div>
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span>{formatCurrency(detailModal.subtotal)}</span>
+              </div>
+              {detailModal.discount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Discount</span>
+                  <span>-{formatCurrency(detailModal.discount)}</span>
+                </div>
+              )}
+              {detailModal.taxAmount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Tax</span>
+                  <span>{formatCurrency(detailModal.taxAmount)}</span>
+                </div>
+              )}
+              {detailModal.deliveryCharge > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Delivery</span>
+                  <span>{formatCurrency(detailModal.deliveryCharge)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg">
+                <span>Grand Total</span>
+                <span>{formatCurrency(detailModal.grandTotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Paid</span>
+                <span>{formatCurrency(detailModal.paidAmount)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Due</span>
+                <span className="text-destructive">{formatCurrency(detailModal.dueAmount)}</span>
+              </div>
             </div>
 
             {detailModal.notes && (

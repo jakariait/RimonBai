@@ -1,35 +1,38 @@
-import { useState } from "react";
-import { useFetch, useCreate } from "../../hooks/useQueries";
-import { PageHeader } from "../../components/ui/PageHeader";
-import { DataTable } from "../../components/ui/Table";
-import { Modal } from "../../components/ui/Modal";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { Select } from "../../components/ui/Select";
-import { FormField } from "../../components/ui/FormField";
-import { Badge } from "../../components/ui/Badge";
-import { Card, CardContent } from "../../components/ui/Card";
-import { formatCurrency, formatDate } from "../../lib/utils";
-import { Plus, Trash2, Eye } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { useFetch, useCreate } from '../../hooks/useQueries';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { DataTable } from '../../components/ui/Table';
+import { Modal } from '../../components/ui/Modal';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
+import { FormField } from '../../components/ui/FormField';
+import { Badge } from '../../components/ui/Badge';
+import { Card, CardContent } from '../../components/ui/Card';
+import { formatCurrency, formatDate } from '../../lib/utils';
+import { Plus, Trash2, Eye } from 'lucide-react';
+import { toast } from 'sonner';
 
 function Purchases() {
   const [modalOpen, setModalOpen] = useState(false);
   const [detailModal, setDetailModal] = useState(null);
-  const [items, setItems] = useState([{ product: "", quantity: 1, unitCost: 0 }]);
+  const [items, setItems] = useState([{ product: '', quantity: 1, unitCost: 0 }]);
 
-  const { data: purchasesData, isLoading } = useFetch("/purchases", { page: 1, limit: 100 });
-  const { data: suppliersData } = useFetch("/suppliers", { page: 1, limit: 200 });
-  const { data: productsData } = useFetch("/products", { page: 1, limit: 500 });
-  const createMutation = useCreate("/purchases", { invalidate: "/purchases" });
+  const { data: purchasesData, isLoading } = useFetch('/purchases', { page: 1, limit: 100 });
+  const { data: suppliersData } = useFetch('/suppliers', { page: 1, limit: 200 });
+  const { data: productsData } = useFetch('/products', { page: 1, limit: 500 });
+  const createMutation = useCreate('/purchases', { invalidate: '/purchases' });
 
   const suppliers = suppliersData?.data || [];
   const products = productsData?.data || [];
 
   const supplierOptions = suppliers.map((s) => ({ value: s._id, label: s.companyName }));
-  const productOptions = products.map((p) => ({ value: p._id, label: `${p.productName} (${p.sku}) - ${formatCurrency(p.purchasePrice)}` }));
+  const productOptions = products.map((p) => ({
+    value: p._id,
+    label: `${p.productName} (${p.sku}) - ${formatCurrency(p.purchasePrice)}`,
+  }));
 
-  const addItem = () => setItems([...items, { product: "", quantity: 1, unitCost: 0 }]);
+  const addItem = () => setItems([...items, { product: '', quantity: 1, unitCost: 0 }]);
   const removeItem = (index) => {
     if (items.length === 1) return;
     setItems(items.filter((_, i) => i !== index));
@@ -39,7 +42,7 @@ function Purchases() {
     const newItems = [...items];
     newItems[index][field] = value;
 
-    if (field === "product") {
+    if (field === 'product') {
       const product = products.find((p) => p._id === value);
       if (product) {
         newItems[index].unitCost = product.purchasePrice;
@@ -71,13 +74,13 @@ function Purchases() {
       })),
     };
 
-    if (!data.supplier) return toast.error("Please select a supplier");
-    if (items.some((i) => !i.product)) return toast.error("Please select products");
+    if (!data.supplier) return toast.error('Please select a supplier');
+    if (items.some((i) => !i.product)) return toast.error('Please select products');
 
     try {
       await createMutation.mutateAsync(data);
       setModalOpen(false);
-      setItems([{ product: "", quantity: 1, unitCost: 0 }]);
+      setItems([{ product: '', quantity: 1, unitCost: 0 }]);
     } catch {}
   };
 
@@ -87,43 +90,51 @@ function Purchases() {
 
       <DataTable
         columns={[
-          { header: "Purchase #", accessor: "purchaseNumber" },
+          { header: 'Purchase #', accessor: 'purchaseNumber' },
           {
-            header: "Supplier",
-            accessor: "supplier",
-            cell: (row) => row.supplier?.companyName || "N/A",
+            header: 'Supplier',
+            accessor: 'supplier',
+            cell: (row) => row.supplier?.companyName || 'N/A',
           },
           {
-            header: "Total",
-            accessor: "grandTotal",
+            header: 'Total',
+            accessor: 'grandTotal',
             cell: (row) => formatCurrency(row.grandTotal),
           },
           {
-            header: "Paid",
-            accessor: "paidAmount",
+            header: 'Paid',
+            accessor: 'paidAmount',
             cell: (row) => formatCurrency(row.paidAmount),
           },
           {
-            header: "Due",
-            accessor: "dueAmount",
+            header: 'Due',
+            accessor: 'dueAmount',
             cell: (row) => formatCurrency(row.dueAmount),
           },
           {
-            header: "Status",
-            accessor: "status",
+            header: 'Status',
+            accessor: 'status',
             cell: (row) => {
               if (row.dueAmount === 0) return <Badge variant="success">Paid</Badge>;
-              if (row.dueAmount > 0 && row.paidAmount > 0) return <Badge variant="warning">Partial</Badge>;
+              if (row.dueAmount > 0 && row.paidAmount > 0)
+                return <Badge variant="warning">Partial</Badge>;
               return <Badge variant="destructive">Unpaid</Badge>;
             },
           },
-          { header: "Date", accessor: "purchaseDate", cell: (row) => formatDate(row.purchaseDate) },
+          { header: 'Date', accessor: 'purchaseDate', cell: (row) => formatDate(row.purchaseDate) },
           {
-            header: "Actions",
-            accessor: "_id",
+            header: 'Actions',
+            accessor: '_id',
             sortable: false,
             cell: (row) => (
-              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setDetailModal(row); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDetailModal(row);
+                }}
+              >
                 <Eye className="h-4 w-4" />
               </Button>
             ),
@@ -169,7 +180,7 @@ function Purchases() {
                   <div className="flex-1">
                     <Select
                       value={item.product}
-                      onChange={(e) => updateItem(i, "product", e.target.value)}
+                      onChange={(e) => updateItem(i, 'product', e.target.value)}
                       options={productOptions}
                       placeholder="Select product"
                     />
@@ -179,7 +190,7 @@ function Purchases() {
                       type="number"
                       min="1"
                       value={item.quantity}
-                      onChange={(e) => updateItem(i, "quantity", parseInt(e.target.value) || 1)}
+                      onChange={(e) => updateItem(i, 'quantity', parseInt(e.target.value) || 1)}
                       placeholder="Qty"
                     />
                   </div>
@@ -188,7 +199,7 @@ function Purchases() {
                       type="number"
                       step="0.01"
                       value={item.unitCost}
-                      onChange={(e) => updateItem(i, "unitCost", parseFloat(e.target.value) || 0)}
+                      onChange={(e) => updateItem(i, 'unitCost', parseFloat(e.target.value) || 0)}
                       placeholder="Cost"
                     />
                   </div>
@@ -211,13 +222,22 @@ function Purchases() {
           </FormField>
 
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button type="submit" isLoading={createMutation.isPending}>Create Purchase</Button>
+            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={createMutation.isPending}>
+              Create Purchase
+            </Button>
           </div>
         </form>
       </Modal>
 
-      <Modal open={!!detailModal} onClose={() => setDetailModal(null)} title="Purchase Details" size="lg">
+      <Modal
+        open={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Purchase Details"
+        size="lg"
+      >
         {detailModal && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -252,7 +272,7 @@ function Purchases() {
                 <tbody>
                   {detailModal.items?.map((item, i) => (
                     <tr key={i} className="border-b">
-                      <td className="py-2">{item.product?.productName || "N/A"}</td>
+                      <td className="py-2">{item.product?.productName || 'N/A'}</td>
                       <td className="text-right py-2">{item.quantity}</td>
                       <td className="text-right py-2">{formatCurrency(item.unitCost)}</td>
                       <td className="text-right py-2">{formatCurrency(item.totalCost)}</td>
@@ -263,13 +283,40 @@ function Purchases() {
             </div>
 
             <div className="space-y-1 border-t pt-4">
-              <div className="flex justify-between text-sm"><span>Subtotal</span><span>{formatCurrency(detailModal.subtotal)}</span></div>
-              {detailModal.discount > 0 && <div className="flex justify-between text-sm"><span>Discount</span><span>-{formatCurrency(detailModal.discount)}</span></div>}
-              {detailModal.taxAmount > 0 && <div className="flex justify-between text-sm"><span>Tax</span><span>{formatCurrency(detailModal.taxAmount)}</span></div>}
-              {detailModal.shipping > 0 && <div className="flex justify-between text-sm"><span>Shipping</span><span>{formatCurrency(detailModal.shipping)}</span></div>}
-              <div className="flex justify-between font-bold text-lg"><span>Grand Total</span><span>{formatCurrency(detailModal.grandTotal)}</span></div>
-              <div className="flex justify-between text-sm"><span>Paid</span><span>{formatCurrency(detailModal.paidAmount)}</span></div>
-              <div className="flex justify-between text-sm"><span>Due</span><span className="text-destructive">{formatCurrency(detailModal.dueAmount)}</span></div>
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span>{formatCurrency(detailModal.subtotal)}</span>
+              </div>
+              {detailModal.discount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Discount</span>
+                  <span>-{formatCurrency(detailModal.discount)}</span>
+                </div>
+              )}
+              {detailModal.taxAmount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Tax</span>
+                  <span>{formatCurrency(detailModal.taxAmount)}</span>
+                </div>
+              )}
+              {detailModal.shipping > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Shipping</span>
+                  <span>{formatCurrency(detailModal.shipping)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg">
+                <span>Grand Total</span>
+                <span>{formatCurrency(detailModal.grandTotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Paid</span>
+                <span>{formatCurrency(detailModal.paidAmount)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Due</span>
+                <span className="text-destructive">{formatCurrency(detailModal.dueAmount)}</span>
+              </div>
             </div>
 
             {detailModal.notes && (

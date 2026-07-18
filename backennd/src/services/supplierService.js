@@ -38,7 +38,9 @@ const updateSupplier = async (id, data) => {
 const deleteSupplier = async (id) => {
   const hasPurchases = await Purchase.exists({ supplier: id });
   if (hasPurchases) {
-    throw Object.assign(new Error('Cannot delete supplier with existing purchases'), { statusCode: 400 });
+    throw Object.assign(new Error('Cannot delete supplier with existing purchases'), {
+      statusCode: 400,
+    });
   }
   const supplier = await Supplier.findByIdAndDelete(id);
   if (!supplier) {
@@ -58,12 +60,10 @@ const getSupplierLedger = async (id, query = {}) => {
     .populate('items.product', 'productName')
     .lean();
 
-  const payments = await Payment.find({ supplier: id })
-    .sort({ paymentDate: -1 })
-    .lean();
+  const payments = await Payment.find({ supplier: id }).sort({ paymentDate: -1 }).lean();
 
   const entries = [
-    ...purchases.map(p => ({
+    ...purchases.map((p) => ({
       date: p.purchaseDate,
       type: 'purchase',
       reference: p.purchaseNumber,
@@ -71,7 +71,7 @@ const getSupplierLedger = async (id, query = {}) => {
       credit: 0,
       balance: 0,
     })),
-    ...payments.map(p => ({
+    ...payments.map((p) => ({
       date: p.paymentDate,
       type: 'payment',
       reference: p._id,
@@ -82,10 +82,13 @@ const getSupplierLedger = async (id, query = {}) => {
   ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
   let balance = 0;
-  const ledgerEntries = entries.reverse().map(e => {
-    balance += e.debit - e.credit;
-    return { ...e, balance };
-  }).reverse();
+  const ledgerEntries = entries
+    .reverse()
+    .map((e) => {
+      balance += e.debit - e.credit;
+      return { ...e, balance };
+    })
+    .reverse();
 
   const start = (page - 1) * limit;
   const paginatedEntries = ledgerEntries.slice(start, start + limit);
@@ -103,4 +106,11 @@ const getSupplierLedger = async (id, query = {}) => {
   };
 };
 
-module.exports = { createSupplier, getSuppliers, getSupplierById, updateSupplier, deleteSupplier, getSupplierLedger };
+module.exports = {
+  createSupplier,
+  getSuppliers,
+  getSupplierById,
+  updateSupplier,
+  deleteSupplier,
+  getSupplierLedger,
+};

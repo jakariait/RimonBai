@@ -1,12 +1,12 @@
-import { Card, CardContent } from "./Card";
-import { cn } from "../../lib/utils";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { Card, CardContent } from './Card';
+import { cn } from '../../lib/utils';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 function StatCard({ title, value, icon: Icon, trend, trendValue, className }) {
-  const isPositive = trend === "up" || (trendValue && trendValue >= 0);
+  const isPositive = trend === 'up' || (trendValue && trendValue >= 0);
 
   return (
-    <Card className={cn("", className)}>
+    <Card className={cn('', className)}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -19,7 +19,7 @@ function StatCard({ title, value, icon: Icon, trend, trendValue, className }) {
                 ) : (
                   <TrendingDown className="h-4 w-4 text-red-500" />
                 )}
-                <span className={cn("text-xs", isPositive ? "text-green-500" : "text-red-500")}>
+                <span className={cn('text-xs', isPositive ? 'text-green-500' : 'text-red-500')}>
                   {trendValue}%
                 </span>
               </div>
