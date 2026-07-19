@@ -31,4 +31,11 @@ const deletePurchase = async (req, res) => {
   sendSuccess(res, result, 'Purchase deleted successfully');
 };
 
-module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchase, updatePurchaseStatus, deletePurchase };
+module.exports = {
+  createPurchase,
+  getPurchases,
+  getPurchaseById,
+  updatePurchase,
+  updatePurchaseStatus,
+  deletePurchase,
+};

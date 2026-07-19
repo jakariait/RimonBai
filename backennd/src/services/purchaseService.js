@@ -234,4 +234,11 @@ const deletePurchase = async (id) => {
   return { message: 'Purchase deleted successfully' };
 };
 
-module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchase, updatePurchaseStatus, deletePurchase };
+module.exports = {
+  createPurchase,
+  getPurchases,
+  getPurchaseById,
+  updatePurchase,
+  updatePurchaseStatus,
+  deletePurchase,
+};

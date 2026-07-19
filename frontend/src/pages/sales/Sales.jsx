@@ -11,6 +11,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Card, CardContent } from '../../components/ui/Card';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import { Plus, Trash2, Eye, Pencil, FileText, Activity } from 'lucide-react';
+import logoSrc from '../../assets/sr-medical.png';
 import { toast } from 'sonner';
 
 const paymentMethods = [
@@ -315,9 +316,7 @@ function Sales() {
 
           <div class="invoice-header">
             <div class="header-left">
-              <div class="logo-icon">
-                ${biz.businessName ? biz.businessName.charAt(0).toUpperCase() : 'R'}
-              </div>
+              <img src="${logoSrc}" alt="Logo" style="height:48px;width:auto;border-radius:8px" />
               <div>
                 <div class="company-name">${biz.businessName || 'Rimon Medical Equipment'}</div>
                 <div class="company-tagline">Innovative & Reliable Laboratory Diagnostic System Solution</div>

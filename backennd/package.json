@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "nodemon": "nodemon src/server.js",
     "create-user": "node src/scripts/createUser.js",
     "seed": "node src/scripts/seed.js",
     "format": "prettier --write \"src/**/*.js\"",
