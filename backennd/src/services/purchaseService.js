@@ -205,4 +205,33 @@ const updatePurchaseStatus = async (id, status) => {
   return purchase;
 };
 
-module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchase, updatePurchaseStatus };
+const deletePurchase = async (id) => {
+  const existing = await Purchase.findById(id);
+  if (!existing) {
+    throw Object.assign(new Error('Purchase not found'), { statusCode: 404 });
+  }
+
+  for (const item of existing.items) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      product.currentStock -= item.quantity;
+      if (product.currentStock < 0) product.currentStock = 0;
+      await product.save();
+    }
+  }
+
+  const supplier = await Supplier.findById(existing.supplier);
+  if (supplier) {
+    supplier.totalPurchases -= existing.grandTotal;
+    supplier.totalPaid -= existing.paidAmount;
+    supplier.outstandingBalance -= existing.dueAmount;
+    await supplier.save();
+  }
+
+  await StockMovement.deleteMany({ reference: id, referenceModel: 'Purchase' });
+  await Purchase.findByIdAndDelete(id);
+
+  return { message: 'Purchase deleted successfully' };
+};
+
+module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchase, updatePurchaseStatus, deletePurchase };

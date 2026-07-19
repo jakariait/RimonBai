@@ -12,5 +12,6 @@ router.post('/', validateBody(createSaleSchema), saleController.createSale);
 router.get('/:id', saleController.getSaleById);
 router.put('/:id', validateBody(createSaleSchema), saleController.updateSale);
 router.put('/:id/status', saleController.updateSaleStatus);
+router.delete('/:id', saleController.deleteSale);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useFetch, useCreate, useUpdate } from '../../hooks/useQueries';
+import { useFetch, useCreate, useUpdate, useDelete } from '../../hooks/useQueries';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { DataTable } from '../../components/ui/Table';
 import { Modal } from '../../components/ui/Modal';
@@ -25,6 +25,7 @@ function Sales() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingSale, setEditingSale] = useState(null);
   const [detailModal, setDetailModal] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [items, setItems] = useState([{ product: '', quantity: 1, unitPrice: 0 }]);
 
   const { data: salesData, isLoading } = useFetch('/sales', { page: 1, limit: 100 });
@@ -33,6 +34,7 @@ function Sales() {
   const { data: businessData } = useFetch('/settings/business');
   const createMutation = useCreate('/sales', { invalidate: '/sales' });
   const updateMutation = useUpdate('/sales', { invalidate: '/sales' });
+  const deleteMutation = useDelete('/sales', { invalidate: '/sales' });
 
   const customers = customersData?.data || [];
   const products = productsData?.data || [];
@@ -555,6 +557,16 @@ function Sales() {
                 >
                   <FileText className="h-4 w-4" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirm(row);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
               </div>
             ),
           },
@@ -780,6 +792,33 @@ function Sales() {
             )}
           </div>
         )}
+      </Modal>
+
+      <Modal
+        open={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title="Confirm Delete"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p>Are you sure you want to delete this sale? This action cannot be undone.</p>
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={() => setDeleteConfirm(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              isLoading={deleteMutation.isPending}
+              onClick={() => {
+                deleteMutation.mutate(deleteConfirm._id);
+                setDeleteConfirm(null);
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

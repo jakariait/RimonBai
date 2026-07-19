@@ -26,4 +26,9 @@ const updateSaleStatus = async (req, res) => {
   sendSuccess(res, sale, 'Sale status updated');
 };
 
-module.exports = { createSale, getSales, getSaleById, updateSale, updateSaleStatus };
+const deleteSale = async (req, res) => {
+  const result = await saleService.deleteSale(req.params.id);
+  sendSuccess(res, result, 'Sale deleted successfully');
+};
+
+module.exports = { createSale, getSales, getSaleById, updateSale, updateSaleStatus, deleteSale };

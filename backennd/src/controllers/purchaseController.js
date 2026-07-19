@@ -26,4 +26,9 @@ const updatePurchaseStatus = async (req, res) => {
   sendSuccess(res, purchase, 'Purchase status updated');
 };
 
-module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchase, updatePurchaseStatus };
+const deletePurchase = async (req, res) => {
+  const result = await purchaseService.deletePurchase(req.params.id);
+  sendSuccess(res, result, 'Purchase deleted successfully');
+};
+
+module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchase, updatePurchaseStatus, deletePurchase };

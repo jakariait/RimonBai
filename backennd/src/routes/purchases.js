@@ -12,5 +12,6 @@ router.post('/', validateBody(createPurchaseSchema), purchaseController.createPu
 router.get('/:id', purchaseController.getPurchaseById);
 router.put('/:id', validateBody(createPurchaseSchema), purchaseController.updatePurchase);
 router.put('/:id/status', purchaseController.updatePurchaseStatus);
+router.delete('/:id', purchaseController.deletePurchase);
 
 module.exports = router;

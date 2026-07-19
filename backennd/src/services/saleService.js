@@ -208,4 +208,32 @@ const updateSaleStatus = async (id, status) => {
   return sale;
 };
 
-module.exports = { createSale, getSales, getSaleById, updateSale, updateSaleStatus };
+const deleteSale = async (id) => {
+  const existing = await Sale.findById(id);
+  if (!existing) {
+    throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
+  }
+
+  for (const item of existing.items) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      product.currentStock += item.quantity;
+      await product.save();
+    }
+  }
+
+  const customer = await Customer.findById(existing.customer);
+  if (customer) {
+    customer.totalSales -= existing.grandTotal;
+    customer.totalPaid -= existing.paidAmount;
+    customer.dueBalance -= existing.dueAmount;
+    await customer.save();
+  }
+
+  await StockMovement.deleteMany({ reference: id, referenceModel: 'Sale' });
+  await Sale.findByIdAndDelete(id);
+
+  return { message: 'Sale deleted successfully' };
+};
+
+module.exports = { createSale, getSales, getSaleById, updateSale, updateSaleStatus, deleteSale };
