@@ -16,9 +16,14 @@ const getPurchaseById = async (req, res) => {
   sendSuccess(res, purchase);
 };
 
+const updatePurchase = async (req, res) => {
+  const purchase = await purchaseService.updatePurchase(req.params.id, req.body, req.user._id);
+  sendSuccess(res, purchase, 'Purchase updated successfully');
+};
+
 const updatePurchaseStatus = async (req, res) => {
   const purchase = await purchaseService.updatePurchaseStatus(req.params.id, req.body.status);
   sendSuccess(res, purchase, 'Purchase status updated');
 };
 
-module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchaseStatus };
+module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchase, updatePurchaseStatus };

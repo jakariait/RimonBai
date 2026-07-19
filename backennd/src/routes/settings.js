@@ -21,7 +21,18 @@ router.put('/business', authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN), async (req, r
   if (!settings) {
     settings = await BusinessSetting.create(req.body);
   } else {
-    Object.assign(settings, req.body);
+    settings.businessName = req.body.businessName ?? settings.businessName;
+    settings.address = req.body.address ?? settings.address;
+    settings.phone = req.body.phone ?? settings.phone;
+    settings.email = req.body.email ?? settings.email;
+    settings.phones = req.body.phones ?? settings.phones;
+    settings.emails = req.body.emails ?? settings.emails;
+    settings.website = req.body.website ?? settings.website;
+    settings.taxId = req.body.taxId ?? settings.taxId;
+    settings.currency = req.body.currency ?? settings.currency;
+    settings.currencySymbol = req.body.currencySymbol ?? settings.currencySymbol;
+    settings.timezone = req.body.timezone ?? settings.timezone;
+    settings.dateFormat = req.body.dateFormat ?? settings.dateFormat;
     await settings.save();
   }
   sendSuccess(res, settings, 'Business settings updated');

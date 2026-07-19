@@ -96,7 +96,6 @@ const purchaseSchema = new mongoose.Schema(
   }
 );
 
-purchaseSchema.index({ purchaseNumber: 1 });
 purchaseSchema.index({ supplier: 1 });
 purchaseSchema.index({ purchaseDate: -1 });
 purchaseSchema.index({ status: 1 });

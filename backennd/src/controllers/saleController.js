@@ -16,9 +16,14 @@ const getSaleById = async (req, res) => {
   sendSuccess(res, sale);
 };
 
+const updateSale = async (req, res) => {
+  const sale = await saleService.updateSale(req.params.id, req.body, req.user._id);
+  sendSuccess(res, sale, 'Sale updated successfully');
+};
+
 const updateSaleStatus = async (req, res) => {
   const sale = await saleService.updateSaleStatus(req.params.id, req.body.status);
   sendSuccess(res, sale, 'Sale status updated');
 };
 
-module.exports = { createSale, getSales, getSaleById, updateSaleStatus };
+module.exports = { createSale, getSales, getSaleById, updateSale, updateSaleStatus };

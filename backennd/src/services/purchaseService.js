@@ -104,6 +104,99 @@ const getPurchaseById = async (id) => {
   return purchase;
 };
 
+const updatePurchase = async (id, data, userId) => {
+  const existing = await Purchase.findById(id);
+  if (!existing) {
+    throw Object.assign(new Error('Purchase not found'), { statusCode: 404 });
+  }
+
+  for (const item of existing.items) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      product.currentStock -= item.quantity;
+      if (product.currentStock < 0) product.currentStock = 0;
+      await product.save();
+    }
+  }
+
+  const supplier = await Supplier.findById(existing.supplier);
+  if (supplier) {
+    supplier.totalPurchases -= existing.grandTotal;
+    supplier.totalPaid -= existing.paidAmount;
+    supplier.outstandingBalance -= existing.dueAmount;
+    await supplier.save();
+  }
+
+  await StockMovement.deleteMany({ reference: id, referenceModel: 'Purchase' });
+
+  const items = data.items.map((item) => ({
+    ...item,
+    totalCost: item.quantity * item.unitCost,
+  }));
+
+  const totals = calculateTotals(
+    items,
+    data.discount,
+    data.taxRate,
+    data.shipping,
+    data.otherCosts
+  );
+
+  const purchase = await Purchase.findByIdAndUpdate(
+    id,
+    {
+      supplier: data.supplier,
+      purchaseDate: data.purchaseDate || existing.purchaseDate,
+      items,
+      subtotal: totals.subtotal,
+      discount: totals.totalDiscount,
+      taxRate: data.taxRate || 0,
+      taxAmount: totals.taxAmount,
+      shipping: data.shipping || 0,
+      otherCosts: data.otherCosts || 0,
+      grandTotal: totals.grandTotal,
+      paidAmount: data.paidAmount || 0,
+      dueAmount: totals.grandTotal - (data.paidAmount || 0),
+      notes: data.notes || '',
+    },
+    { new: true }
+  );
+
+  for (const item of items) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      const previousStock = product.currentStock;
+      product.currentStock += item.quantity;
+      product.purchasePrice = item.unitCost;
+      await product.save();
+
+      await StockMovement.create({
+        product: product._id,
+        type: 'purchase',
+        quantity: item.quantity,
+        previousStock,
+        newStock: product.currentStock,
+        reference: purchase._id,
+        referenceModel: 'Purchase',
+        notes: `Purchase: ${existing.purchaseNumber}`,
+        createdBy: userId,
+      });
+    }
+  }
+
+  const updatedSupplier = await Supplier.findById(data.supplier);
+  if (updatedSupplier) {
+    updatedSupplier.totalPurchases += totals.grandTotal;
+    updatedSupplier.totalPaid += data.paidAmount || 0;
+    updatedSupplier.outstandingBalance += purchase.dueAmount;
+    await updatedSupplier.save();
+  }
+
+  return await Purchase.findById(purchase._id)
+    .populate('supplier', 'companyName')
+    .populate('items.product', 'productName sku');
+};
+
 const updatePurchaseStatus = async (id, status) => {
   const purchase = await Purchase.findByIdAndUpdate(id, { status }, { new: true });
   if (!purchase) {
@@ -112,4 +205,4 @@ const updatePurchaseStatus = async (id, status) => {
   return purchase;
 };
 
-module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchaseStatus };
+module.exports = { createPurchase, getPurchases, getPurchaseById, updatePurchase, updatePurchaseStatus };

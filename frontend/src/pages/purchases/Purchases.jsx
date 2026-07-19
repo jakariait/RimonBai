@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useFetch, useCreate } from '../../hooks/useQueries';
+import { useState, useMemo } from 'react';
+import { useFetch, useCreate, useUpdate } from '../../hooks/useQueries';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { DataTable } from '../../components/ui/Table';
 import { Modal } from '../../components/ui/Modal';
@@ -10,11 +10,12 @@ import { FormField } from '../../components/ui/FormField';
 import { Badge } from '../../components/ui/Badge';
 import { Card, CardContent } from '../../components/ui/Card';
 import { formatCurrency, formatDate } from '../../lib/utils';
-import { Plus, Trash2, Eye } from 'lucide-react';
+import { Plus, Trash2, Eye, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 function Purchases() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState(null);
   const [detailModal, setDetailModal] = useState(null);
   const [items, setItems] = useState([{ product: '', quantity: 1, unitCost: 0 }]);
 
@@ -22,12 +23,28 @@ function Purchases() {
   const { data: suppliersData } = useFetch('/suppliers', { page: 1, limit: 200 });
   const { data: productsData } = useFetch('/products', { page: 1, limit: 500 });
   const createMutation = useCreate('/purchases', { invalidate: '/purchases' });
+  const updateMutation = useUpdate('/purchases', { invalidate: '/purchases' });
 
   const suppliers = suppliersData?.data || [];
   const products = productsData?.data || [];
 
   const supplierOptions = suppliers.map((s) => ({ value: s._id, label: s.companyName }));
-  const productOptions = products.map((p) => ({
+
+  const extraProducts = useMemo(() => {
+    if (!editingPurchase?.items) return [];
+    return editingPurchase.items
+      .filter((i) => i.product && typeof i.product === 'object')
+      .filter((i) => !products.find((p) => p._id === i.product._id))
+      .map((i) => ({
+        _id: i.product._id,
+        productName: i.product.productName || 'Unknown',
+        sku: i.product.sku || '',
+        purchasePrice: i.unitCost || 0,
+      }));
+  }, [editingPurchase, products]);
+
+  const allProducts = [...products, ...extraProducts];
+  const productOptions = allProducts.map((p) => ({
     value: p._id,
     label: `${p.productName} (${p.sku}) - ${formatCurrency(p.purchasePrice)}`,
   }));
@@ -56,6 +73,30 @@ function Purchases() {
     return items.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
   };
 
+  const openCreateModal = () => {
+    setEditingPurchase(null);
+    setItems([{ product: '', quantity: 1, unitCost: 0 }]);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (row) => {
+    setEditingPurchase(row);
+    setItems(
+      row.items?.map((i) => ({
+        product: String(i.product && typeof i.product === 'object' ? i.product._id || '' : i.product || ''),
+        quantity: i.quantity,
+        unitCost: i.unitCost,
+      })) || [{ product: '', quantity: 1, unitCost: 0 }]
+    );
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingPurchase(null);
+    setItems([{ product: '', quantity: 1, unitCost: 0 }]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -78,15 +119,20 @@ function Purchases() {
     if (items.some((i) => !i.product)) return toast.error('Please select products');
 
     try {
-      await createMutation.mutateAsync(data);
-      setModalOpen(false);
-      setItems([{ product: '', quantity: 1, unitCost: 0 }]);
+      if (editingPurchase) {
+        await updateMutation.mutateAsync({ id: editingPurchase._id, body: data });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      closeModal();
     } catch {}
   };
 
+  const formKey = editingPurchase?._id || 'new';
+
   return (
     <div>
-      <PageHeader title="Purchases" onAction={() => setModalOpen(true)} />
+      <PageHeader title="Purchases" onAction={openCreateModal} />
 
       <DataTable
         columns={[
@@ -127,16 +173,28 @@ function Purchases() {
             accessor: '_id',
             sortable: false,
             cell: (row) => (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDetailModal(row);
-                }}
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openEditModal(row);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDetailModal(row);
+                  }}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </div>
             ),
           },
         ]}
@@ -144,26 +202,61 @@ function Purchases() {
         loading={isLoading}
       />
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New Purchase" size="xl">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <Modal
+        open={modalOpen}
+        onClose={closeModal}
+        title={editingPurchase ? 'Edit Purchase' : 'New Purchase'}
+        size="xl"
+      >
+        <form key={formKey} onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Supplier" required>
-              <Select name="supplier" options={supplierOptions} placeholder="Select supplier" />
+              <Select
+                name="supplier"
+                options={supplierOptions}
+                placeholder="Select supplier"
+                defaultValue={editingPurchase?.supplier?._id || ''}
+              />
             </FormField>
             <FormField label="Discount">
-              <Input name="discount" type="number" step="0.01" defaultValue="0" />
+              <Input
+                name="discount"
+                type="number"
+                step="0.01"
+                defaultValue={editingPurchase?.discount ?? '0'}
+              />
             </FormField>
             <FormField label="Tax Rate (%)">
-              <Input name="taxRate" type="number" step="0.1" defaultValue="0" />
+              <Input
+                name="taxRate"
+                type="number"
+                step="0.1"
+                defaultValue={editingPurchase?.taxRate ?? '0'}
+              />
             </FormField>
             <FormField label="Shipping">
-              <Input name="shipping" type="number" step="0.01" defaultValue="0" />
+              <Input
+                name="shipping"
+                type="number"
+                step="0.01"
+                defaultValue={editingPurchase?.shipping ?? '0'}
+              />
             </FormField>
             <FormField label="Other Costs">
-              <Input name="otherCosts" type="number" step="0.01" defaultValue="0" />
+              <Input
+                name="otherCosts"
+                type="number"
+                step="0.01"
+                defaultValue={editingPurchase?.otherCosts ?? '0'}
+              />
             </FormField>
             <FormField label="Paid Amount">
-              <Input name="paidAmount" type="number" step="0.01" defaultValue="0" />
+              <Input
+                name="paidAmount"
+                type="number"
+                step="0.01"
+                defaultValue={editingPurchase?.paidAmount ?? '0'}
+              />
             </FormField>
           </div>
 
@@ -218,15 +311,19 @@ function Purchases() {
           </Card>
 
           <FormField label="Notes">
-            <Input name="notes" placeholder="Notes" />
+            <Input
+              name="notes"
+              placeholder="Notes"
+              defaultValue={editingPurchase?.notes || ''}
+            />
           </FormField>
 
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={closeModal}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={createMutation.isPending}>
-              Create Purchase
+            <Button type="submit" isLoading={createMutation.isPending || updateMutation.isPending}>
+              {editingPurchase ? 'Update Purchase' : 'Create Purchase'}
             </Button>
           </div>
         </form>

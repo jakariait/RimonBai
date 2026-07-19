@@ -10,7 +10,7 @@ import useAuthStore from '../../store/useAuthStore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changePasswordSchema } from '../../lib/validations';
-import { Building2, FileText, Key, Save } from 'lucide-react';
+import { Building2, FileText, Key, Save, Plus, X } from 'lucide-react';
 
 function Settings() {
   const [activeTab, setActiveTab] = useState('business');
@@ -19,11 +19,17 @@ function Settings() {
   const { data: businessData, refetch: refetchBusiness } = useFetch('/settings/business');
   const { data: invoiceData, refetch: refetchInvoice } = useFetch('/settings/invoice');
 
-  const [businessForm, setBusinessForm] = useState({});
+  const [businessForm, setBusinessForm] = useState({ phones: [], emails: [] });
   const [invoiceForm, setInvoiceForm] = useState({});
 
   useEffect(() => {
-    if (businessData?.data) setBusinessForm(businessData.data);
+    if (businessData?.data) {
+      setBusinessForm({
+        ...businessData.data,
+        phones: businessData.data.phones || [],
+        emails: businessData.data.emails || [],
+      });
+    }
   }, [businessData]);
 
   useEffect(() => {
@@ -122,18 +128,88 @@ function Settings() {
                   onChange={(e) => setBusinessForm({ ...businessForm, address: e.target.value })}
                 />
               </FormField>
-              <FormField label="Phone">
-                <Input
-                  value={businessForm.phone || ''}
-                  onChange={(e) => setBusinessForm({ ...businessForm, phone: e.target.value })}
-                />
+              <FormField label="Phone Numbers">
+                <div className="space-y-2">
+                  {(businessForm.phones || []).map((p, i) => (
+                    <div key={i} className="flex gap-2">
+                      <Input
+                        value={p}
+                        onChange={(e) => {
+                          const updated = [...(businessForm.phones || [])];
+                          updated[i] = e.target.value;
+                          setBusinessForm({ ...businessForm, phones: updated });
+                        }}
+                        placeholder="Enter phone number"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const updated = (businessForm.phones || []).filter((_, j) => j !== i);
+                          setBusinessForm({ ...businessForm, phones: updated });
+                        }}
+                      >
+                        <X className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setBusinessForm({
+                        ...businessForm,
+                        phones: [...(businessForm.phones || []), ''],
+                      })
+                    }
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Phone
+                  </Button>
+                </div>
               </FormField>
-              <FormField label="Email">
-                <Input
-                  type="email"
-                  value={businessForm.email || ''}
-                  onChange={(e) => setBusinessForm({ ...businessForm, email: e.target.value })}
-                />
+              <FormField label="Email Addresses">
+                <div className="space-y-2">
+                  {(businessForm.emails || []).map((e, i) => (
+                    <div key={i} className="flex gap-2">
+                      <Input
+                        type="email"
+                        value={e}
+                        onChange={(ev) => {
+                          const updated = [...(businessForm.emails || [])];
+                          updated[i] = ev.target.value;
+                          setBusinessForm({ ...businessForm, emails: updated });
+                        }}
+                        placeholder="Enter email address"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const updated = (businessForm.emails || []).filter((_, j) => j !== i);
+                          setBusinessForm({ ...businessForm, emails: updated });
+                        }}
+                      >
+                        <X className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setBusinessForm({
+                        ...businessForm,
+                        emails: [...(businessForm.emails || []), ''],
+                      })
+                    }
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Email
+                  </Button>
+                </div>
               </FormField>
               <FormField label="Website">
                 <Input

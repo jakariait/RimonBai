@@ -10,6 +10,7 @@ router.use(authenticate);
 router.get('/', purchaseController.getPurchases);
 router.post('/', validateBody(createPurchaseSchema), purchaseController.createPurchase);
 router.get('/:id', purchaseController.getPurchaseById);
+router.put('/:id', validateBody(createPurchaseSchema), purchaseController.updatePurchase);
 router.put('/:id/status', purchaseController.updatePurchaseStatus);
 
 module.exports = router;

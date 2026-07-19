@@ -22,6 +22,14 @@ const businessSettingSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    phones: {
+      type: [String],
+      default: [],
+    },
+    emails: {
+      type: [String],
+      default: [],
+    },
     website: {
       type: String,
       default: '',

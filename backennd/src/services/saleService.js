@@ -108,6 +108,98 @@ const getSaleById = async (id) => {
   return sale;
 };
 
+const updateSale = async (id, data, userId) => {
+  const existing = await Sale.findById(id);
+  if (!existing) {
+    throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
+  }
+
+  for (const item of existing.items) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      product.currentStock += item.quantity;
+      await product.save();
+    }
+  }
+
+  const customer = await Customer.findById(existing.customer);
+  if (customer) {
+    customer.totalSales -= existing.grandTotal;
+    customer.totalPaid -= existing.paidAmount;
+    customer.dueBalance -= existing.dueAmount;
+    await customer.save();
+  }
+
+  await StockMovement.deleteMany({ reference: id, referenceModel: 'Sale' });
+
+  const items = data.items.map((item) => ({
+    ...item,
+    totalPrice: item.quantity * item.unitPrice,
+  }));
+
+  const totals = calculateTotals(
+    items.map((i) => ({ quantity: i.quantity, unitCost: i.unitPrice })),
+    data.discount,
+    data.taxRate,
+    data.deliveryCharge,
+    0
+  );
+
+  const sale = await Sale.findByIdAndUpdate(
+    id,
+    {
+      customer: data.customer,
+      saleDate: data.saleDate || existing.saleDate,
+      items,
+      subtotal: totals.subtotal,
+      discount: totals.totalDiscount,
+      taxRate: data.taxRate || 0,
+      taxAmount: totals.taxAmount,
+      deliveryCharge: data.deliveryCharge || 0,
+      grandTotal: totals.grandTotal,
+      paidAmount: data.paidAmount || 0,
+      dueAmount: totals.grandTotal - (data.paidAmount || 0),
+      paymentMethod: data.paymentMethod || 'Cash',
+      notes: data.notes || '',
+    },
+    { new: true }
+  );
+
+  for (const item of items) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      const previousStock = product.currentStock;
+      product.currentStock -= item.quantity;
+      if (product.currentStock < 0) product.currentStock = 0;
+      await product.save();
+
+      await StockMovement.create({
+        product: product._id,
+        type: 'sale',
+        quantity: -item.quantity,
+        previousStock,
+        newStock: product.currentStock,
+        reference: sale._id,
+        referenceModel: 'Sale',
+        notes: `Sale: ${existing.invoiceNumber}`,
+        createdBy: userId,
+      });
+    }
+  }
+
+  const updatedCustomer = await Customer.findById(data.customer);
+  if (updatedCustomer) {
+    updatedCustomer.totalSales += totals.grandTotal;
+    updatedCustomer.totalPaid += data.paidAmount || 0;
+    updatedCustomer.dueBalance += sale.dueAmount;
+    await updatedCustomer.save();
+  }
+
+  return await Sale.findById(sale._id)
+    .populate('customer', 'name company phone')
+    .populate('items.product', 'productName sku sellingPrice');
+};
+
 const updateSaleStatus = async (id, status) => {
   const sale = await Sale.findByIdAndUpdate(id, { status }, { new: true });
   if (!sale) {
@@ -116,4 +208,4 @@ const updateSaleStatus = async (id, status) => {
   return sale;
 };
 
-module.exports = { createSale, getSales, getSaleById, updateSaleStatus };
+module.exports = { createSale, getSales, getSaleById, updateSale, updateSaleStatus };
