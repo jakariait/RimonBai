@@ -85,7 +85,9 @@ function Purchases() {
     setEditingPurchase(row);
     setItems(
       row.items?.map((i) => ({
-        product: String(i.product && typeof i.product === 'object' ? i.product._id || '' : i.product || ''),
+        product: String(
+          i.product && typeof i.product === 'object' ? i.product._id || '' : i.product || ''
+        ),
         quantity: i.quantity,
         unitCost: i.unitCost,
       })) || [{ product: '', quantity: 1, unitCost: 0 }]
@@ -323,11 +325,7 @@ function Purchases() {
           </Card>
 
           <FormField label="Notes">
-            <Input
-              name="notes"
-              placeholder="Notes"
-              defaultValue={editingPurchase?.notes || ''}
-            />
+            <Input name="notes" placeholder="Notes" defaultValue={editingPurchase?.notes || ''} />
           </FormField>
 
           <div className="flex justify-end gap-3">

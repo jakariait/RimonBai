@@ -12,7 +12,9 @@ const createCustomer = async (data) => {
 const getCustomers = async (query) => {
   const features = new APIFeatures(Customer.find({ isActive: true }), query)
     .search(['name', 'company', 'phone', 'email'])
-    .filter().sort().paginate();
+    .filter()
+    .sort()
+    .paginate();
 
   const customers = await features.query;
   const total = await Customer.countDocuments(features.query._conditions);
@@ -55,7 +57,10 @@ const updateCustomer = async (id, data) => {
 
 const deleteCustomer = async (id) => {
   const hasSales = await Sale.exists({ customer: id, isDeleted: { $ne: true } });
-  if (hasSales) throw Object.assign(new Error('Cannot delete customer with existing sales'), { statusCode: 400 });
+  if (hasSales)
+    throw Object.assign(new Error('Cannot delete customer with existing sales'), {
+      statusCode: 400,
+    });
 
   const customer = await Customer.findByIdAndUpdate(id, { isActive: false }, { new: true });
   if (!customer) throw Object.assign(new Error('Customer not found'), { statusCode: 404 });
@@ -73,12 +78,16 @@ const getCustomerLedger = async (id, query = {}) => {
     customer: id,
     isDeleted: { $ne: true },
     status: { $ne: 'Cancelled' },
-  }).sort({ saleDate: 1 }).lean();
+  })
+    .sort({ saleDate: 1 })
+    .lean();
 
   const payments = await CustomerPayment.find({
     customer: id,
     isDeleted: { $ne: true },
-  }).sort({ paymentDate: 1 }).lean();
+  })
+    .sort({ paymentDate: 1 })
+    .lean();
 
   const entries = [];
 
@@ -166,8 +175,9 @@ const getCustomerLedger = async (id, query = {}) => {
     });
   }
 
+  const reversedEntries = [...entries].reverse();
   const start = (page - 1) * limit;
-  const paginatedEntries = entries.slice(start, start + limit);
+  const paginatedEntries = reversedEntries.slice(start, start + limit);
 
   return {
     customer: { ...customer.toJSON() },
@@ -196,13 +206,17 @@ const getCustomerStatement = async (id, query = {}) => {
     isDeleted: { $ne: true },
     status: { $ne: 'Cancelled' },
     saleDate: { $gte: fromDate, $lte: toDate },
-  }).sort({ saleDate: 1 }).lean();
+  })
+    .sort({ saleDate: 1 })
+    .lean();
 
   const payments = await CustomerPayment.find({
     customer: id,
     isDeleted: { $ne: true },
     paymentDate: { $gte: fromDate, $lte: toDate },
-  }).sort({ paymentDate: 1 }).lean();
+  })
+    .sort({ paymentDate: 1 })
+    .lean();
 
   const entries = [];
 
@@ -275,6 +289,8 @@ const getCustomerStatement = async (id, query = {}) => {
   const totalSeparatePayments = payments.reduce((s, p) => s + p.amount, 0);
   const totalPaid = totalPaidAtInvoice + totalSeparatePayments;
 
+  entries.reverse();
+
   return {
     customer: { ...customer.toJSON() },
     entries,
@@ -318,9 +334,9 @@ const getCustomerInvoices = async (id, query = {}) => {
   const total = await Sale.countDocuments(features.query._conditions);
 
   const allocations = await CustomerPaymentAllocation.find().lean();
-  const salesWithDue = sales.map(s => {
+  const salesWithDue = sales.map((s) => {
     const invoiceAllocations = allocations
-      .filter(a => String(a.invoice) === String(s._id))
+      .filter((a) => String(a.invoice) === String(s._id))
       .reduce((sum, a) => sum + a.allocatedAmount, 0);
     const paidAtCreation = s.paymentReceivedAtInvoice || 0;
     const totalPaid = paidAtCreation + invoiceAllocations;
@@ -346,12 +362,16 @@ const getCustomerDashboard = async (id) => {
     customer: id,
     isDeleted: { $ne: true },
     status: { $ne: 'Cancelled' },
-  }).sort({ saleDate: -1 }).lean();
+  })
+    .sort({ saleDate: -1 })
+    .lean();
 
   const payments = await CustomerPayment.find({
     customer: id,
     isDeleted: { $ne: true },
-  }).sort({ paymentDate: -1 }).lean();
+  })
+    .sort({ paymentDate: -1 })
+    .lean();
 
   const allocations = await CustomerPaymentAllocation.find().lean();
 
@@ -360,9 +380,9 @@ const getCustomerDashboard = async (id) => {
   const totalSeparatePayments = payments.reduce((s, p) => s + p.amount, 0);
   const totalPaid = totalPaidAtInvoice + totalSeparatePayments;
 
-  const invoicesWithStatus = invoices.map(inv => {
+  const invoicesWithStatus = invoices.map((inv) => {
     const invoiceAllocations = allocations
-      .filter(a => String(a.invoice) === String(inv._id))
+      .filter((a) => String(a.invoice) === String(inv._id))
       .reduce((sum, a) => sum + a.allocatedAmount, 0);
     const paidAtCreation = inv.paymentReceivedAtInvoice || 0;
     const totalPaidForInvoice = paidAtCreation + invoiceAllocations;
@@ -375,9 +395,11 @@ const getCustomerDashboard = async (id) => {
     return { ...inv, outstandingDue: outstanding, paidAmount: totalPaidForInvoice, invStatus };
   });
 
-  const outstandingInvoices = invoicesWithStatus.filter(i => i.invStatus === 'due' || i.invStatus === 'partial');
-  const paidInvoices = invoicesWithStatus.filter(i => i.invStatus === 'paid');
-  const partiallyPaidInvoices = invoicesWithStatus.filter(i => i.invStatus === 'partial');
+  const outstandingInvoices = invoicesWithStatus.filter(
+    (i) => i.invStatus === 'due' || i.invStatus === 'partial'
+  );
+  const paidInvoices = invoicesWithStatus.filter((i) => i.invStatus === 'paid');
+  const partiallyPaidInvoices = invoicesWithStatus.filter((i) => i.invStatus === 'partial');
 
   const lastPayment = payments.length > 0 ? payments[0] : null;
 

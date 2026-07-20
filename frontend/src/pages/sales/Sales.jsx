@@ -355,14 +355,48 @@ function Sales() {
 
   const numberToWords = (num) => {
     if (num === 0) return 'Zero';
-    const a = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
-    const b = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+    const a = [
+      '',
+      'One',
+      'Two',
+      'Three',
+      'Four',
+      'Five',
+      'Six',
+      'Seven',
+      'Eight',
+      'Nine',
+      'Ten',
+      'Eleven',
+      'Twelve',
+      'Thirteen',
+      'Fourteen',
+      'Fifteen',
+      'Sixteen',
+      'Seventeen',
+      'Eighteen',
+      'Nineteen',
+    ];
+    const b = [
+      '',
+      '',
+      'Twenty',
+      'Thirty',
+      'Forty',
+      'Fifty',
+      'Sixty',
+      'Seventy',
+      'Eighty',
+      'Ninety',
+    ];
     const fn = (n) => {
       if (n < 20) return a[n];
       if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? ' ' + a[n % 10] : '');
       if (n < 1000) return a[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + fn(n % 100) : '');
-      if (n < 100000) return fn(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 ? ' ' + fn(n % 1000) : '');
-      if (n < 10000000) return fn(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + fn(n % 100000) : '');
+      if (n < 100000)
+        return fn(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 ? ' ' + fn(n % 1000) : '');
+      if (n < 10000000)
+        return fn(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + fn(n % 100000) : '');
       return fn(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 ? ' ' + fn(n % 10000000) : '');
     };
     const whole = Math.floor(num);
@@ -382,7 +416,11 @@ function Sales() {
         columns={[
           { header: 'Invoice #', accessor: 'invoiceNumber' },
           { header: 'Customer', accessor: 'customer', cell: (row) => row.customer?.name || 'N/A' },
-          { header: 'Total', accessor: 'grandTotal', cell: (row) => formatCurrency(row.grandTotal) },
+          {
+            header: 'Total',
+            accessor: 'grandTotal',
+            cell: (row) => formatCurrency(row.grandTotal),
+          },
           { header: 'Paid', accessor: 'paidAmount', cell: (row) => formatCurrency(row.paidAmount) },
           { header: 'Due', accessor: 'dueAmount', cell: (row) => formatCurrency(row.dueAmount) },
           { header: 'Method', accessor: 'paymentMethod' },
@@ -403,16 +441,44 @@ function Sales() {
             sortable: false,
             cell: (row) => (
               <div className="flex gap-1">
-                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEditModal(row); }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openEditModal(row);
+                  }}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setDetailModal(row); }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDetailModal(row);
+                  }}
+                >
                   <Eye className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); printInvoice(row); }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    printInvoice(row);
+                  }}
+                >
                   <FileText className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setDeleteConfirm(row); }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirm(row);
+                  }}
+                >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
@@ -423,11 +489,18 @@ function Sales() {
         loading={isLoading}
       />
 
-      <Modal open={modalOpen} onClose={closeModal} title={editingSale ? 'Edit Sale' : 'New Sale'} size="xl">
+      <Modal
+        open={modalOpen}
+        onClose={closeModal}
+        title={editingSale ? 'Edit Sale' : 'New Sale'}
+        size="xl"
+      >
         <form key={formKey} onSubmit={handleSubmit} className="space-y-6">
           {customerDue && previousDue > 0 && (
             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-sm">
-              <span className="text-destructive font-medium">⚠ Previous Outstanding Due: {formatCurrency(previousDue)}</span>
+              <span className="text-destructive font-medium">
+                ⚠ Previous Outstanding Due: {formatCurrency(previousDue)}
+              </span>
             </div>
           )}
 
@@ -449,16 +522,36 @@ function Sales() {
               />
             </FormField>
             <FormField label="Discount">
-              <Input name="discount" type="number" step="0.01" defaultValue={editingSale?.discount ?? '0'} />
+              <Input
+                name="discount"
+                type="number"
+                step="0.01"
+                defaultValue={editingSale?.discount ?? '0'}
+              />
             </FormField>
             <FormField label="Tax Rate (%)">
-              <Input name="taxRate" type="number" step="0.1" defaultValue={editingSale?.taxRate ?? '0'} />
+              <Input
+                name="taxRate"
+                type="number"
+                step="0.1"
+                defaultValue={editingSale?.taxRate ?? '0'}
+              />
             </FormField>
             <FormField label="Delivery Charge">
-              <Input name="deliveryCharge" type="number" step="0.01" defaultValue={editingSale?.deliveryCharge ?? '0'} />
+              <Input
+                name="deliveryCharge"
+                type="number"
+                step="0.01"
+                defaultValue={editingSale?.deliveryCharge ?? '0'}
+              />
             </FormField>
             <FormField label="Paid Amount">
-              <Input name="paidAmount" type="number" step="0.01" defaultValue={editingSale?.paidAmount ?? '0'} />
+              <Input
+                name="paidAmount"
+                type="number"
+                step="0.01"
+                defaultValue={editingSale?.paidAmount ?? '0'}
+              />
             </FormField>
           </div>
 
@@ -509,12 +602,26 @@ function Sales() {
                     />
                   </div>
                   <div className="w-24">
-                    <Input type="number" min="1" value={item.quantity} onChange={(e) => updateItem(i, 'quantity', parseInt(e.target.value) || 1)} placeholder="Qty" />
+                    <Input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(i, 'quantity', parseInt(e.target.value) || 1)}
+                      placeholder="Qty"
+                    />
                   </div>
                   <div className="w-32">
-                    <Input type="number" step="0.01" value={item.unitPrice} onChange={(e) => updateItem(i, 'unitPrice', parseFloat(e.target.value) || 0)} placeholder="Price" />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={item.unitPrice}
+                      onChange={(e) => updateItem(i, 'unitPrice', parseFloat(e.target.value) || 0)}
+                      placeholder="Price"
+                    />
                   </div>
-                  <div className="w-32 pt-2 text-sm font-medium">{formatCurrency(item.quantity * item.unitPrice)}</div>
+                  <div className="w-32 pt-2 text-sm font-medium">
+                    {formatCurrency(item.quantity * item.unitPrice)}
+                  </div>
                   <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(i)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -531,7 +638,9 @@ function Sales() {
           </FormField>
 
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={closeModal}>
+              Cancel
+            </Button>
             <Button type="submit" isLoading={createMutation.isPending || updateMutation.isPending}>
               {editingSale ? 'Update Sale' : 'Create Sale'}
             </Button>
@@ -539,12 +648,19 @@ function Sales() {
         </form>
       </Modal>
 
-      <Modal open={!!detailModal} onClose={() => setDetailModal(null)} title="Sale Details" size="lg">
+      <Modal
+        open={!!detailModal}
+        onClose={() => setDetailModal(null)}
+        title="Sale Details"
+        size="lg"
+      >
         {detailModal && (
           <div className="space-y-4">
             {detailModal.previousDue > 0 && (
               <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-sm">
-                <span className="text-destructive font-medium">⚠ Previous Outstanding Due: {formatCurrency(detailModal.previousDue)}</span>
+                <span className="text-destructive font-medium">
+                  ⚠ Previous Outstanding Due: {formatCurrency(detailModal.previousDue)}
+                </span>
               </div>
             )}
             <div className="grid grid-cols-2 gap-4">
@@ -643,16 +759,44 @@ function Sales() {
                 <p>{detailModal.notes}</p>
               </div>
             )}
+            <div className="flex justify-end pt-2 border-t">
+              <Button
+                type="button"
+                onClick={() => {
+                  printInvoice(detailModal);
+                  setDetailModal(null);
+                }}
+              >
+                <FileText className="h-4 w-4 mr-2" /> Print Invoice
+              </Button>
+            </div>
           </div>
         )}
       </Modal>
 
-      <Modal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} title="Confirm Delete" size="sm">
+      <Modal
+        open={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title="Confirm Delete"
+        size="sm"
+      >
         <div className="space-y-4">
           <p>Are you sure you want to delete this sale? This action cannot be undone.</p>
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
-            <Button type="button" variant="destructive" isLoading={deleteMutation.isPending} onClick={() => { deleteMutation.mutate(deleteConfirm._id); setDeleteConfirm(null); }}>Delete</Button>
+            <Button type="button" variant="outline" onClick={() => setDeleteConfirm(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              isLoading={deleteMutation.isPending}
+              onClick={() => {
+                deleteMutation.mutate(deleteConfirm._id);
+                setDeleteConfirm(null);
+              }}
+            >
+              Delete
+            </Button>
           </div>
         </div>
       </Modal>

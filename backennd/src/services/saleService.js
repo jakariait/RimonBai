@@ -24,8 +24,11 @@ const createSale = async (data, userId) => {
   }));
 
   const totals = calculateTotals(
-    items.map(i => ({ quantity: i.quantity, unitCost: i.unitPrice })),
-    data.discount, data.taxRate, data.deliveryCharge, 0
+    items.map((i) => ({ quantity: i.quantity, unitCost: i.unitPrice })),
+    data.discount,
+    data.taxRate,
+    data.deliveryCharge,
+    0
   );
 
   const { previousDue, advanceBalance } = await getCustomerBalanceBeforeInvoice(data.customer);
@@ -97,16 +100,20 @@ const getSales = async (query) => {
       .populate('customer', 'name company phone')
       .populate('items.product', 'productName sku'),
     query
-  ).search(['invoiceNumber']).filter().sort('-saleDate').paginate();
+  )
+    .search(['invoiceNumber'])
+    .filter()
+    .sort('-saleDate')
+    .paginate();
 
   const sales = await features.query;
   const total = await Sale.countDocuments(features.query._conditions);
 
   const allocations = await require('../models/CustomerPaymentAllocation').find().lean();
 
-  const salesWithDue = sales.map(s => {
+  const salesWithDue = sales.map((s) => {
     const invoiceAllocations = allocations
-      .filter(a => String(a.invoice) === String(s._id))
+      .filter((a) => String(a.invoice) === String(s._id))
       .reduce((sum, a) => sum + a.allocatedAmount, 0);
     const paidAtCreation = s.paymentReceivedAtInvoice || 0;
     const totalPaidForInvoice = paidAtCreation + invoiceAllocations;
@@ -128,7 +135,8 @@ const getSaleById = async (id) => {
     .populate('items.product', 'productName sku brand modelNumber sellingPrice')
     .populate('createdBy', 'name');
 
-  if (!sale || sale.isDeleted) throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
+  if (!sale || sale.isDeleted)
+    throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
 
   const allocations = await require('../models/CustomerPaymentAllocation')
     .find({ invoice: id })
@@ -150,7 +158,8 @@ const getSaleById = async (id) => {
 
 const updateSale = async (id, data, userId) => {
   const existing = await Sale.findById(id);
-  if (!existing || existing.isDeleted) throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
+  if (!existing || existing.isDeleted)
+    throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
 
   for (const item of existing.items) {
     const product = await Product.findById(item.product);
@@ -162,10 +171,13 @@ const updateSale = async (id, data, userId) => {
 
   await StockMovement.deleteMany({ reference: id, referenceModel: 'Sale' });
 
-  const items = data.items.map(item => ({ ...item, totalPrice: item.quantity * item.unitPrice }));
+  const items = data.items.map((item) => ({ ...item, totalPrice: item.quantity * item.unitPrice }));
   const totals = calculateTotals(
-    items.map(i => ({ quantity: i.quantity, unitCost: i.unitPrice })),
-    data.discount, data.taxRate, data.deliveryCharge, 0
+    items.map((i) => ({ quantity: i.quantity, unitCost: i.unitPrice })),
+    data.discount,
+    data.taxRate,
+    data.deliveryCharge,
+    0
   );
 
   const { previousDue, advanceBalance } = await getCustomerBalanceBeforeInvoice(data.customer);
@@ -182,25 +194,29 @@ const updateSale = async (id, data, userId) => {
   const remainingDueAfterInvoice = Math.max(0, netPayable - paymentReceivedAtInvoice);
   const dueAmount = netPayable - paymentReceivedAtInvoice;
 
-  const sale = await Sale.findByIdAndUpdate(id, {
-    customer: data.customer,
-    saleDate: data.saleDate || existing.saleDate,
-    items,
-    subtotal: totals.subtotal,
-    discount: totals.totalDiscount,
-    taxRate: data.taxRate || 0,
-    taxAmount: totals.taxAmount,
-    deliveryCharge: data.deliveryCharge || 0,
-    grandTotal: totals.grandTotal,
-    paidAmount: paymentReceivedAtInvoice,
-    dueAmount: Math.max(0, dueAmount),
-    paymentMethod: data.paymentMethod || 'Cash',
-    notes: data.notes || '',
-    previousDue,
-    advanceUsed,
-    paymentReceivedAtInvoice,
-    remainingDueAfterInvoice,
-  }, { new: true });
+  const sale = await Sale.findByIdAndUpdate(
+    id,
+    {
+      customer: data.customer,
+      saleDate: data.saleDate || existing.saleDate,
+      items,
+      subtotal: totals.subtotal,
+      discount: totals.totalDiscount,
+      taxRate: data.taxRate || 0,
+      taxAmount: totals.taxAmount,
+      deliveryCharge: data.deliveryCharge || 0,
+      grandTotal: totals.grandTotal,
+      paidAmount: paymentReceivedAtInvoice,
+      dueAmount: Math.max(0, dueAmount),
+      paymentMethod: data.paymentMethod || 'Cash',
+      notes: data.notes || '',
+      previousDue,
+      advanceUsed,
+      paymentReceivedAtInvoice,
+      remainingDueAfterInvoice,
+    },
+    { new: true }
+  );
 
   for (const item of items) {
     const product = await Product.findById(item.product);
@@ -236,7 +252,8 @@ const updateSaleStatus = async (id, status) => {
 
 const deleteSale = async (id) => {
   const existing = await Sale.findById(id);
-  if (!existing || existing.isDeleted) throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
+  if (!existing || existing.isDeleted)
+    throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
 
   for (const item of existing.items) {
     const product = await Product.findById(item.product);

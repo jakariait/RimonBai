@@ -57,8 +57,15 @@ const getCustomerDashboard = async (req, res) => {
 };
 
 module.exports = {
-  createCustomer, getCustomers, getCustomerById,
-  updateCustomer, deleteCustomer,
-  getCustomerLedger, getCustomerStatement, getCustomerDue,
-  getCustomerPayments, getCustomerInvoices, getCustomerDashboard,
+  createCustomer,
+  getCustomers,
+  getCustomerById,
+  updateCustomer,
+  deleteCustomer,
+  getCustomerLedger,
+  getCustomerStatement,
+  getCustomerDue,
+  getCustomerPayments,
+  getCustomerInvoices,
+  getCustomerDashboard,
 };

@@ -13,12 +13,16 @@ const getCustomerFinancialSummary = async (customerId) => {
     customer: customerId,
     isDeleted: { $ne: true },
     status: { $ne: 'Cancelled' },
-  }).sort({ saleDate: 1 }).lean();
+  })
+    .sort({ saleDate: 1 })
+    .lean();
 
   const payments = await CustomerPayment.find({
     customer: customerId,
     isDeleted: { $ne: true },
-  }).sort({ paymentDate: 1 }).lean();
+  })
+    .sort({ paymentDate: 1 })
+    .lean();
 
   const allocations = await CustomerPaymentAllocation.find().lean();
 
@@ -27,7 +31,8 @@ const getCustomerFinancialSummary = async (customerId) => {
   const totalSeparatePayments = payments.reduce((sum, p) => sum + p.amount, 0);
   const totalPaidAmount = totalPaidAtInvoice + totalSeparatePayments;
 
-  const netDue = customer.openingDue + totalInvoiceAmount - totalPaidAmount - customer.openingAdvance;
+  const netDue =
+    customer.openingDue + totalInvoiceAmount - totalPaidAmount - customer.openingAdvance;
 
   return {
     customer,
@@ -48,7 +53,7 @@ const getCustomerFinancialSummary = async (customerId) => {
 
 const getInvoiceOutstandingAmount = (invoice, allocations) => {
   const invoiceAllocations = allocations
-    .filter(a => String(a.invoice) === String(invoice._id))
+    .filter((a) => String(a.invoice) === String(invoice._id))
     .reduce((sum, a) => sum + a.allocatedAmount, 0);
   const paidAtCreation = invoice.paymentReceivedAtInvoice || 0;
   const totalPaid = paidAtCreation + invoiceAllocations;
@@ -83,7 +88,9 @@ const applyFIFOAllocation = async (customerId, paymentId, amount) => {
     customer: customerId,
     isDeleted: { $ne: true },
     status: { $ne: 'Cancelled' },
-  }).sort({ saleDate: 1 }).lean();
+  })
+    .sort({ saleDate: 1 })
+    .lean();
 
   const allocations = await CustomerPaymentAllocation.find().lean();
 
@@ -98,7 +105,7 @@ const applyFIFOAllocation = async (customerId, paymentId, amount) => {
     const toAllocate = Math.min(remainingAmount, outstanding);
 
     const existingAllocation = allocations.find(
-      a => String(a.payment) === String(paymentId) && String(a.invoice) === String(invoice._id)
+      (a) => String(a.payment) === String(paymentId) && String(a.invoice) === String(invoice._id)
     );
 
     if (existingAllocation) {
@@ -129,7 +136,10 @@ const getPayments = async (query) => {
       .populate('customer', 'name company phone')
       .populate('receivedBy', 'name'),
     query
-  ).filter().sort('-paymentDate').paginate();
+  )
+    .filter()
+    .sort('-paymentDate')
+    .paginate();
 
   const payments = await features.query;
   const total = await CustomerPayment.countDocuments(features.query._conditions);

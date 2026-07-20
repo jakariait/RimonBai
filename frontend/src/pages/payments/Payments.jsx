@@ -12,6 +12,7 @@ import { FormField } from '../../components/ui/FormField';
 import { Card, CardContent } from '../../components/ui/Card';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import { paymentSchema } from '../../lib/validations';
+import logoSrc from '../../assets/sr-medical.png';
 import { Eye, Trash2, Printer } from 'lucide-react';
 
 const paymentMethods = [
@@ -122,6 +123,7 @@ function Payments() {
           <div class="top-bar"></div>
           <div class="header">
             <div class="header-left">
+              <img src="${logoSrc}" alt="Logo" style="height:48px;width:auto;border-radius:8px" />
               <div>
                 <div class="company-name">${biz.businessName || 'Rimon Medical Equipment'}</div>
                 <div class="company-tagline">Innovative & Reliable Laboratory Diagnostic System Solution</div>
@@ -276,10 +278,7 @@ function Payments() {
               <Input {...register('paymentDate')} type="date" />
             </FormField>
             <FormField label="Payment Method" name="paymentMethod">
-              <Select
-                {...register('paymentMethod')}
-                options={paymentMethods}
-              />
+              <Select {...register('paymentMethod')} options={paymentMethods} />
             </FormField>
             <FormField label="Transaction ID" name="transactionId">
               <Input {...register('transactionId')} placeholder="Transaction ID" />
@@ -325,7 +324,9 @@ function Payments() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Amount</p>
-                <p className="font-medium text-lg text-green-600">{formatCurrency(detailModal.amount)}</p>
+                <p className="font-medium text-lg text-green-600">
+                  {formatCurrency(detailModal.amount)}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Payment Method</p>

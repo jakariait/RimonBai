@@ -46,9 +46,11 @@ const customerPaymentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    attachments: [{
-      type: String,
-    }],
+    attachments: [
+      {
+        type: String,
+      },
+    ],
     isDeleted: {
       type: Boolean,
       default: false,

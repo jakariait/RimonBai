@@ -33,7 +33,16 @@ function Customers() {
 
   const openCreate = () => {
     setEditingCustomer(null);
-    reset({ name: '', company: '', phone: '', email: '', address: '', notes: '', openingDue: 0, openingAdvance: 0 });
+    reset({
+      name: '',
+      company: '',
+      phone: '',
+      email: '',
+      address: '',
+      notes: '',
+      openingDue: 0,
+      openingAdvance: 0,
+    });
     setModalOpen(true);
   };
 
@@ -75,7 +84,9 @@ function Customers() {
             header: 'Due Balance',
             accessor: 'dueBalance',
             cell: (row) => (
-              <span className={row.dueBalance > 0 ? 'text-destructive font-medium' : 'text-green-600'}>
+              <span
+                className={row.dueBalance > 0 ? 'text-destructive font-medium' : 'text-green-600'}
+              >
                 {formatCurrency(row.dueBalance)}
               </span>
             ),
@@ -175,10 +186,24 @@ function Customers() {
           <Input {...register('address')} placeholder="Address" />
         </FormField>
         <FormField label="Opening Due" name="openingDue" error={errors.openingDue?.message}>
-          <Input {...register('openingDue', { valueAsNumber: true })} type="number" step="0.01" placeholder="0" />
+          <Input
+            {...register('openingDue', { valueAsNumber: true })}
+            type="number"
+            step="0.01"
+            placeholder="0"
+          />
         </FormField>
-        <FormField label="Opening Advance" name="openingAdvance" error={errors.openingAdvance?.message}>
-          <Input {...register('openingAdvance', { valueAsNumber: true })} type="number" step="0.01" placeholder="0" />
+        <FormField
+          label="Opening Advance"
+          name="openingAdvance"
+          error={errors.openingAdvance?.message}
+        >
+          <Input
+            {...register('openingAdvance', { valueAsNumber: true })}
+            type="number"
+            step="0.01"
+            placeholder="0"
+          />
         </FormField>
         <FormField label="Notes" name="notes" error={errors.notes?.message}>
           <Input {...register('notes')} placeholder="Notes" />
