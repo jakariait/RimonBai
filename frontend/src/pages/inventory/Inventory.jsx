@@ -38,7 +38,7 @@ function Inventory() {
         />
       </div>
 
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 ">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -86,11 +86,6 @@ function Inventory() {
               columns={[
                 { header: 'Product', accessor: 'productName' },
                 { header: 'SKU', accessor: 'sku' },
-                {
-                  header: 'Category',
-                  accessor: 'category',
-                  cell: (row) => row.category?.name || 'N/A',
-                },
               ]}
               data={products.filter((p) => p.currentStock === 0)}
               loading={productsLoading}
