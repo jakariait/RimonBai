@@ -15,6 +15,11 @@ const generatePurchaseNumber = (prefix = 'PUR', count) => {
   return `${prefix}-${num}`;
 };
 
+const generatePaymentNumber = (prefix = 'RCT', count) => {
+  const num = String(count).padStart(6, '0');
+  return `${prefix}-${num}`;
+};
+
 const calculateTotals = (items, discount = 0, taxRate = 0, shipping = 0, otherCosts = 0) => {
   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
   const totalDiscount = typeof discount === 'number' ? discount : 0;
@@ -44,6 +49,7 @@ module.exports = {
   generateSKU,
   generateInvoiceNumber,
   generatePurchaseNumber,
+  generatePaymentNumber,
   calculateTotals,
   paginateQuery,
   getPaginationMeta,

@@ -33,6 +33,8 @@ export const customerSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   address: z.string().optional().default(''),
   notes: z.string().optional().default(''),
+  openingDue: z.coerce.number().min(0).optional().default(0),
+  openingAdvance: z.coerce.number().min(0).optional().default(0),
 });
 
 export const productSchema = z.object({
@@ -58,4 +60,14 @@ export const expenseSchema = z.object({
   expenseDate: z.string().optional(),
   paymentMethod: z.string().optional().default('Cash'),
   reference: z.string().optional().default(''),
+});
+
+export const paymentSchema = z.object({
+  customer: z.string().min(1, 'Customer is required'),
+  amount: z.string().min(1, 'Amount is required'),
+  paymentDate: z.string().optional(),
+  paymentMethod: z.string().optional().default('Cash'),
+  transactionId: z.string().optional().default(''),
+  reference: z.string().optional().default(''),
+  note: z.string().optional().default(''),
 });

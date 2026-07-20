@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { customerSchema } from '../../lib/validations';
@@ -9,10 +10,12 @@ import { FormModal } from '../../components/ui/FormModal';
 import { Input } from '../../components/ui/Input';
 import { FormField } from '../../components/ui/FormField';
 import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
 import { formatCurrency } from '../../lib/utils';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Eye, CreditCard, FileText } from 'lucide-react';
 
 function Customers() {
+  const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
 
@@ -30,7 +33,7 @@ function Customers() {
 
   const openCreate = () => {
     setEditingCustomer(null);
-    reset({ name: '', company: '', phone: '', email: '', address: '', notes: '' });
+    reset({ name: '', company: '', phone: '', email: '', address: '', notes: '', openingDue: 0, openingAdvance: 0 });
     setModalOpen(true);
   };
 
@@ -71,14 +74,53 @@ function Customers() {
           {
             header: 'Due Balance',
             accessor: 'dueBalance',
-            cell: (row) => formatCurrency(row.dueBalance),
+            cell: (row) => (
+              <span className={row.dueBalance > 0 ? 'text-destructive font-medium' : 'text-green-600'}>
+                {formatCurrency(row.dueBalance)}
+              </span>
+            ),
+          },
+          {
+            header: 'Advance',
+            accessor: 'advanceBalance',
+            cell: (row) =>
+              row.advanceBalance > 0 ? (
+                <Badge variant="success">{formatCurrency(row.advanceBalance)}</Badge>
+              ) : (
+                '-'
+              ),
+          },
+          {
+            header: 'Total Sales',
+            accessor: 'totalSales',
+            cell: (row) => formatCurrency(row.totalSales),
           },
           {
             header: 'Actions',
             accessor: '_id',
             sortable: false,
             cell: (row) => (
-              <div className="flex gap-2">
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/customers/${row._id}`);
+                  }}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/customers/${row._id}/statement`);
+                  }}
+                >
+                  <FileText className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -131,6 +173,12 @@ function Customers() {
         </FormField>
         <FormField label="Address" name="address" error={errors.address?.message}>
           <Input {...register('address')} placeholder="Address" />
+        </FormField>
+        <FormField label="Opening Due" name="openingDue" error={errors.openingDue?.message}>
+          <Input {...register('openingDue', { valueAsNumber: true })} type="number" step="0.01" placeholder="0" />
+        </FormField>
+        <FormField label="Opening Advance" name="openingAdvance" error={errors.openingAdvance?.message}>
+          <Input {...register('openingAdvance', { valueAsNumber: true })} type="number" step="0.01" placeholder="0" />
         </FormField>
         <FormField label="Notes" name="notes" error={errors.notes?.message}>
           <Input {...register('notes')} placeholder="Notes" />

@@ -11,6 +11,8 @@ import AppLayout from './components/layout/AppLayout';
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
 const Suppliers = lazy(() => import('./pages/suppliers/Suppliers'));
 const Customers = lazy(() => import('./pages/customers/Customers'));
+const CustomerDashboard = lazy(() => import('./pages/customers/CustomerDashboard'));
+const CustomerStatement = lazy(() => import('./pages/customers/CustomerStatement'));
 const Products = lazy(() => import('./pages/products/Products'));
 const Purchases = lazy(() => import('./pages/purchases/Purchases'));
 const Sales = lazy(() => import('./pages/sales/Sales'));
@@ -20,6 +22,7 @@ const ProfitLoss = lazy(() => import('./pages/reports/ProfitLoss'));
 const Reports = lazy(() => import('./pages/reports/Reports'));
 const Users = lazy(() => import('./pages/users/Users'));
 const Settings = lazy(() => import('./pages/settings/Settings'));
+const Payments = lazy(() => import('./pages/payments/Payments'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -95,6 +98,26 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/customers/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <CustomerDashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customers/:id/statement"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <CustomerStatement />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/products"
           element={
             <ProtectedRoute>
@@ -120,6 +143,16 @@ function AppRoutes() {
             <ProtectedRoute>
               <AppLayout>
                 <Sales />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Payments />
               </AppLayout>
             </ProtectedRoute>
           }

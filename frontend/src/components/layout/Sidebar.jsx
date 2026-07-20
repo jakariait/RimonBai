@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Boxes,
+  Banknote,
 } from 'lucide-react';
 
 const menuItems = [
@@ -25,6 +26,7 @@ const menuItems = [
   { icon: Package, label: 'Products', path: '/products' },
   { icon: ShoppingCart, label: 'Purchases', path: '/purchases' },
   { icon: ShoppingBag, label: 'Sales', path: '/sales' },
+  { icon: Banknote, label: 'Payments', path: '/payments' },
   { icon: Wallet, label: 'Expenses', path: '/expenses' },
   { icon: Boxes, label: 'Inventory', path: '/inventory' },
   { icon: BarChart3, label: 'Profit & Loss', path: '/profit-loss' },

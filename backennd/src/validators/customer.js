@@ -7,6 +7,8 @@ const createCustomerSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   address: z.string().optional().default(''),
   notes: z.string().optional().default(''),
+  openingDue: z.number().min(0).optional().default(0),
+  openingAdvance: z.number().min(0).optional().default(0),
 });
 
 const updateCustomerSchema = z.object({
@@ -16,6 +18,8 @@ const updateCustomerSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   address: z.string().optional(),
   notes: z.string().optional(),
+  openingDue: z.number().min(0).optional(),
+  openingAdvance: z.number().min(0).optional(),
 });
 
 module.exports = { createCustomerSchema, updateCustomerSchema };

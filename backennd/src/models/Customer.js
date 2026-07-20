@@ -28,7 +28,11 @@ const customerSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
-    dueBalance: {
+    openingDue: {
+      type: Number,
+      default: 0,
+    },
+    openingAdvance: {
       type: Number,
       default: 0,
     },
@@ -37,17 +41,15 @@ const customerSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
-    totalSales: {
-      type: Number,
-      default: 0,
-    },
-    totalPaid: {
-      type: Number,
-      default: 0,
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 

@@ -31,11 +31,34 @@ const getCustomerLedger = async (req, res) => {
   sendSuccess(res, result, 'Customer ledger fetched successfully');
 };
 
+const getCustomerStatement = async (req, res) => {
+  const result = await customerService.getCustomerStatement(req.params.id, req.query);
+  sendSuccess(res, result, 'Customer statement fetched successfully');
+};
+
+const getCustomerDue = async (req, res) => {
+  const result = await customerService.getCustomerDue(req.params.id);
+  sendSuccess(res, result, 'Customer due fetched successfully');
+};
+
+const getCustomerPayments = async (req, res) => {
+  const result = await customerService.getCustomerPayments(req.params.id, req.query);
+  sendSuccess(res, result.data, 'Customer payments fetched successfully', 200, result.meta);
+};
+
+const getCustomerInvoices = async (req, res) => {
+  const result = await customerService.getCustomerInvoices(req.params.id, req.query);
+  sendSuccess(res, result.data, 'Customer invoices fetched successfully', 200, result.meta);
+};
+
+const getCustomerDashboard = async (req, res) => {
+  const result = await customerService.getCustomerDashboard(req.params.id);
+  sendSuccess(res, result, 'Customer dashboard fetched successfully');
+};
+
 module.exports = {
-  createCustomer,
-  getCustomers,
-  getCustomerById,
-  updateCustomer,
-  deleteCustomer,
-  getCustomerLedger,
+  createCustomer, getCustomers, getCustomerById,
+  updateCustomer, deleteCustomer,
+  getCustomerLedger, getCustomerStatement, getCustomerDue,
+  getCustomerPayments, getCustomerInvoices, getCustomerDashboard,
 };
