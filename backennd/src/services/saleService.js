@@ -2,6 +2,7 @@ const Sale = require('../models/Sale');
 const Product = require('../models/Product');
 const Customer = require('../models/Customer');
 const StockMovement = require('../models/StockMovement');
+const Counter = require('../models/Counter');
 const APIFeatures = require('../utils/apiFeatures');
 const { generateInvoiceNumber, calculateTotals } = require('../utils/helpers');
 const customerPaymentService = require('./customerPaymentService');
@@ -14,9 +15,39 @@ const getCustomerBalanceBeforeInvoice = async (customerId) => {
   };
 };
 
+const getNextInvoiceNumber = async () => {
+  const existing = await Counter.findOne({ key: 'sale_invoice' });
+  if (!existing) {
+    const result = await Sale.aggregate([
+      { $match: { invoiceNumber: { $exists: true, $ne: null } } },
+      {
+        $addFields: {
+          invoiceSeq: {
+            $toInt: { $arrayElemAt: [{ $split: ['$invoiceNumber', '-'] }, 1] },
+          },
+        },
+      },
+      { $sort: { invoiceSeq: -1 } },
+      { $limit: 1 },
+      { $project: { _id: 0, invoiceSeq: 1 } },
+    ]);
+    const startSeq = result[0]?.invoiceSeq || 0;
+    try {
+      await Counter.create({ key: 'sale_invoice', seq: startSeq });
+    } catch (err) {
+      if (err.code !== 11000) throw err;
+    }
+  }
+  const updated = await Counter.findOneAndUpdate(
+    { key: 'sale_invoice' },
+    { $inc: { seq: 1 } },
+    { new: true }
+  );
+  return generateInvoiceNumber('INV', updated.seq);
+};
+
 const createSale = async (data, userId) => {
-  const count = await Sale.countDocuments({ isDeleted: { $ne: true } });
-  const invoiceNumber = generateInvoiceNumber('INV', count + 1);
+  const invoiceNumber = await getNextInvoiceNumber();
 
   const items = data.items.map((item) => ({
     ...item,

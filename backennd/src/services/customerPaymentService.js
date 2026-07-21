@@ -2,6 +2,7 @@ const CustomerPayment = require('../models/CustomerPayment');
 const CustomerPaymentAllocation = require('../models/CustomerPaymentAllocation');
 const Sale = require('../models/Sale');
 const Customer = require('../models/Customer');
+const Counter = require('../models/Counter');
 const APIFeatures = require('../utils/apiFeatures');
 const { generatePaymentNumber } = require('../utils/helpers');
 
@@ -61,8 +62,34 @@ const getInvoiceOutstandingAmount = (invoice, allocations) => {
 };
 
 const createPayment = async (data, userId) => {
-  const count = await CustomerPayment.countDocuments({ isDeleted: { $ne: true } });
-  const paymentNumber = generatePaymentNumber('RCT', count + 1);
+  let existing = await Counter.findOne({ key: 'payment_number' });
+  if (!existing) {
+    const result = await CustomerPayment.aggregate([
+      { $match: { paymentNumber: { $exists: true, $ne: null } } },
+      {
+        $addFields: {
+          paymentSeq: {
+            $toInt: { $arrayElemAt: [{ $split: ['$paymentNumber', '-'] }, 1] },
+          },
+        },
+      },
+      { $sort: { paymentSeq: -1 } },
+      { $limit: 1 },
+      { $project: { _id: 0, paymentSeq: 1 } },
+    ]);
+    const startSeq = result[0]?.paymentSeq || 0;
+    try {
+      await Counter.create({ key: 'payment_number', seq: startSeq });
+    } catch (err) {
+      if (err.code !== 11000) throw err;
+    }
+  }
+  const counter = await Counter.findOneAndUpdate(
+    { key: 'payment_number' },
+    { $inc: { seq: 1 } },
+    { new: true }
+  );
+  const paymentNumber = generatePaymentNumber('RCT', counter.seq);
 
   const payment = await CustomerPayment.create({
     customer: data.customer,

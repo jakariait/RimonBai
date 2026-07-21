@@ -2,12 +2,39 @@ const Purchase = require('../models/Purchase');
 const Product = require('../models/Product');
 const Supplier = require('../models/Supplier');
 const StockMovement = require('../models/StockMovement');
+const Counter = require('../models/Counter');
 const APIFeatures = require('../utils/apiFeatures');
 const { generatePurchaseNumber, calculateTotals } = require('../utils/helpers');
 
 const createPurchase = async (data, userId) => {
-  const count = await Purchase.countDocuments();
-  const purchaseNumber = generatePurchaseNumber('PUR', count + 1);
+  let existing = await Counter.findOne({ key: 'purchase_number' });
+  if (!existing) {
+    const result = await Purchase.aggregate([
+      { $match: { purchaseNumber: { $exists: true, $ne: null } } },
+      {
+        $addFields: {
+          purchaseSeq: {
+            $toInt: { $arrayElemAt: [{ $split: ['$purchaseNumber', '-'] }, 1] },
+          },
+        },
+      },
+      { $sort: { purchaseSeq: -1 } },
+      { $limit: 1 },
+      { $project: { _id: 0, purchaseSeq: 1 } },
+    ]);
+    const startSeq = result[0]?.purchaseSeq || 0;
+    try {
+      await Counter.create({ key: 'purchase_number', seq: startSeq });
+    } catch (err) {
+      if (err.code !== 11000) throw err;
+    }
+  }
+  const counter = await Counter.findOneAndUpdate(
+    { key: 'purchase_number' },
+    { $inc: { seq: 1 } },
+    { new: true }
+  );
+  const purchaseNumber = generatePurchaseNumber('PUR', counter.seq);
 
   const items = data.items.map((item) => ({
     ...item,
