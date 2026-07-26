@@ -306,7 +306,6 @@ function Sales() {
           </table>
           <div class="totals-section">
             <table class="totals-table">
-              <tr><td>Previous Due</td><td>${formatCurrency(sale.previousDue)}</td></tr>
               <tr><td>Current Purchase</td><td>${formatCurrency(sale.grandTotal)}</td></tr>
               ${sale.advanceUsed > 0 ? `<tr><td>Advance Used</td><td>-${formatCurrency(sale.advanceUsed)}</td></tr>` : ''}
               <tr><td>Subtotal</td><td>${formatCurrency(sale.subtotal)}</td></tr>
@@ -316,6 +315,8 @@ function Sales() {
               <tr class="grand-total"><td>Grand Total</td><td>${formatCurrency(sale.grandTotal)}</td></tr>
               <tr><td>Payment Received</td><td>${formatCurrency(sale.paymentReceivedAtInvoice)}</td></tr>
               <tr class="due"><td>Remaining Due</td><td>${formatCurrency(sale.remainingDueAfterInvoice)}</td></tr>
+              ${sale.previousDue > 0 ? `<tr><td>Previous Due</td><td>${formatCurrency(sale.previousDue)}</td></tr>` : ''}
+              <tr class="due"><td>Total Outstanding</td><td>${formatCurrency(sale.remainingDueAfterInvoice + sale.previousDue)}</td></tr>
             </table>
           </div>
           <div class="amount-in-words">
@@ -578,6 +579,10 @@ function Sales() {
                     <p className="text-muted-foreground text-xs">Net Payable</p>
                     <p className="font-semibold">{formatCurrency(netPayable)}</p>
                   </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Total Outstanding</p>
+                    <p className="font-semibold text-destructive">{formatCurrency(previousDue + netPayable)}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -705,10 +710,6 @@ function Sales() {
             </div>
             <div className="space-y-1 border-t pt-4">
               <div className="flex justify-between text-sm">
-                <span>Previous Due</span>
-                <span className="text-destructive">{formatCurrency(detailModal.previousDue)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
                 <span>Current Purchase</span>
                 <span>{formatCurrency(detailModal.grandTotal)}</span>
               </div>
@@ -751,6 +752,16 @@ function Sales() {
               <div className="flex justify-between text-sm font-medium text-destructive">
                 <span>Remaining Due</span>
                 <span>{formatCurrency(detailModal.remainingDueAfterInvoice)}</span>
+              </div>
+              {detailModal.previousDue > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Previous Due</span>
+                  <span className="text-destructive">{formatCurrency(detailModal.previousDue)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm font-semibold text-destructive">
+                <span>Total Outstanding</span>
+                <span>{formatCurrency(detailModal.remainingDueAfterInvoice + detailModal.previousDue)}</span>
               </div>
             </div>
             {detailModal.notes && (
