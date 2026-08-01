@@ -31,9 +31,15 @@ function Products() {
   const [editingProduct, setEditingProduct] = useState(null);
 
   const { data: productsData, isLoading } = useFetch('/products', { page: 1, limit: 200 });
-  const createMutation = useCreate('/products', { invalidate: '/products' });
-  const updateMutation = useUpdate('/products', { invalidate: '/products' });
-  const deleteMutation = useDelete('/products', { invalidate: '/products' });
+  const createMutation = useCreate('/products', {
+    invalidate: ['/products', '/analytics/dashboard'],
+  });
+  const updateMutation = useUpdate('/products', {
+    invalidate: ['/products', '/analytics/dashboard'],
+  });
+  const deleteMutation = useDelete('/products', {
+    invalidate: ['/products', '/analytics/dashboard'],
+  });
 
   const {
     register,

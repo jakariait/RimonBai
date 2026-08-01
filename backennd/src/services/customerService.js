@@ -218,12 +218,34 @@ const getCustomerStatement = async (id, query = {}) => {
     .sort({ paymentDate: 1 })
     .lean();
 
+  const priorSales = await Sale.find({
+    customer: id,
+    isDeleted: { $ne: true },
+    status: { $ne: 'Cancelled' },
+    saleDate: { $lt: fromDate },
+  })
+    .lean();
+
+  const priorPayments = await CustomerPayment.find({
+    customer: id,
+    isDeleted: { $ne: true },
+    paymentDate: { $lt: fromDate },
+  })
+    .lean();
+
+  const priorInvoiced = priorSales.reduce((s, i) => s + i.grandTotal, 0);
+  const priorPaidAtInvoice = priorSales.reduce((s, i) => s + (i.paidAmount || 0), 0);
+  const priorPaymentsTotal = priorPayments.reduce((s, p) => s + p.amount, 0);
+
+  const openingBalance =
+    customer.openingDue - customer.openingAdvance + priorInvoiced - priorPaidAtInvoice - priorPaymentsTotal;
+
   const entries = [];
 
-  let runningBalance = customer.openingDue - customer.openingAdvance;
+  let runningBalance = openingBalance;
 
   entries.push({
-    date: customer.createdAt,
+    date: fromDate,
     type: 'opening',
     reference: 'Opening Balance',
     description: 'Opening Balance',
@@ -296,7 +318,7 @@ const getCustomerStatement = async (id, query = {}) => {
     entries,
     fromDate,
     toDate,
-    openingBalance: customer.openingDue - customer.openingAdvance,
+    openingBalance,
     closingBalance: runningBalance,
     totalInvoiced,
     totalPaid,

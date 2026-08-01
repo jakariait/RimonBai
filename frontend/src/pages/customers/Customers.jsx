@@ -20,9 +20,15 @@ function Customers() {
   const [editingCustomer, setEditingCustomer] = useState(null);
 
   const { data, isLoading } = useFetch('/customers', { page: 1, limit: 100 });
-  const createMutation = useCreate('/customers', { invalidate: '/customers' });
-  const updateMutation = useUpdate('/customers', { invalidate: '/customers' });
-  const deleteMutation = useDelete('/customers', { invalidate: '/customers' });
+  const createMutation = useCreate('/customers', {
+    invalidate: ['/customers', '/analytics/dashboard'],
+  });
+  const updateMutation = useUpdate('/customers', {
+    invalidate: ['/customers', '/analytics/dashboard'],
+  });
+  const deleteMutation = useDelete('/customers', {
+    invalidate: ['/customers', '/analytics/dashboard'],
+  });
 
   const {
     register,

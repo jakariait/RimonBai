@@ -35,9 +35,15 @@ function Sales() {
   const { data: customersData } = useFetch('/customers', { page: 1, limit: 200 });
   const { data: productsData } = useFetch('/products', { page: 1, limit: 500 });
   const { data: businessData } = useFetch('/settings/business');
-  const createMutation = useCreate('/sales', { invalidate: '/sales' });
-  const updateMutation = useUpdate('/sales', { invalidate: '/sales' });
-  const deleteMutation = useDelete('/sales', { invalidate: '/sales' });
+  const createMutation = useCreate('/sales', {
+    invalidate: ['/sales', '/analytics/dashboard', '/customers'],
+  });
+  const updateMutation = useUpdate('/sales', {
+    invalidate: ['/sales', '/analytics/dashboard', '/customers'],
+  });
+  const deleteMutation = useDelete('/sales', {
+    invalidate: ['/sales', '/analytics/dashboard', '/customers', '/customer-payments'],
+  });
 
   const { data: customerDueData } = useFetch(
     `/customers/${selectedCustomerId}/due`,

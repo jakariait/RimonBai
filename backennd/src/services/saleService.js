@@ -3,6 +3,7 @@ const Product = require('../models/Product');
 const Customer = require('../models/Customer');
 const StockMovement = require('../models/StockMovement');
 const Counter = require('../models/Counter');
+const CustomerPaymentAllocation = require('../models/CustomerPaymentAllocation');
 const APIFeatures = require('../utils/apiFeatures');
 const { generateInvoiceNumber, calculateTotals } = require('../utils/helpers');
 const customerPaymentService = require('./customerPaymentService');
@@ -281,7 +282,7 @@ const updateSaleStatus = async (id, status) => {
   return sale;
 };
 
-const deleteSale = async (id) => {
+const deleteSale = async (id, userId) => {
   const existing = await Sale.findById(id);
   if (!existing || existing.isDeleted)
     throw Object.assign(new Error('Sale not found'), { statusCode: 404 });
@@ -296,9 +297,36 @@ const deleteSale = async (id) => {
 
   await StockMovement.deleteMany({ reference: id, referenceModel: 'Sale' });
 
+  const invoiceAllocations = await CustomerPaymentAllocation.find({ invoice: id }).lean();
+  const paymentIds = [...new Set(invoiceAllocations.map((a) => String(a.payment)))];
+
+  await CustomerPaymentAllocation.deleteMany({ invoice: id });
+
+  for (const paymentId of paymentIds) {
+    const payment = await require('../models/CustomerPayment').findById(paymentId);
+    if (!payment || payment.isDeleted) continue;
+    await customerPaymentService.reverseAllocations(paymentId);
+    await customerPaymentService.applyFIFOAllocation(payment.customer, paymentId, payment.amount);
+  }
+
   existing.isDeleted = true;
   existing.deletedAt = new Date();
   await existing.save();
+
+  const receivedAtInvoice = existing.paymentReceivedAtInvoice || existing.paidAmount || 0;
+  if (receivedAtInvoice > 0) {
+    await customerPaymentService.createPayment(
+      {
+        customer: existing.customer,
+        amount: receivedAtInvoice,
+        paymentDate: new Date(),
+        paymentMethod: existing.paymentMethod || 'Cash',
+        reference: existing.invoiceNumber,
+        note: `Auto credit from deleted invoice ${existing.invoiceNumber}`,
+      },
+      userId
+    );
+  }
 
   return { message: 'Sale deleted successfully' };
 };

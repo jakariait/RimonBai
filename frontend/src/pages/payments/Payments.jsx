@@ -32,8 +32,12 @@ function Payments() {
   const { data, isLoading } = useFetch('/customer-payments', { page: 1, limit: 100 });
   const { data: customersData } = useFetch('/customers', { page: 1, limit: 500 });
   const { data: businessData } = useFetch('/settings/business');
-  const createMutation = useCreate('/customer-payments', { invalidate: '/customer-payments' });
-  const deleteMutation = useDelete('/customer-payments', { invalidate: '/customer-payments' });
+  const createMutation = useCreate('/customer-payments', {
+    invalidate: ['/customer-payments', '/analytics/dashboard', '/customers'],
+  });
+  const deleteMutation = useDelete('/customer-payments', {
+    invalidate: ['/customer-payments', '/analytics/dashboard', '/customers'],
+  });
 
   const customers = customersData?.data || [];
   const customerOptions = customers.map((c) => ({ value: c._id, label: `${c.name} (${c.phone})` }));

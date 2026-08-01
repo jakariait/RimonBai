@@ -23,9 +23,15 @@ function Purchases() {
   const { data: purchasesData, isLoading } = useFetch('/purchases', { page: 1, limit: 100 });
   const { data: suppliersData } = useFetch('/suppliers', { page: 1, limit: 200 });
   const { data: productsData } = useFetch('/products', { page: 1, limit: 500 });
-  const createMutation = useCreate('/purchases', { invalidate: '/purchases' });
-  const updateMutation = useUpdate('/purchases', { invalidate: '/purchases' });
-  const deleteMutation = useDelete('/purchases', { invalidate: '/purchases' });
+  const createMutation = useCreate('/purchases', {
+    invalidate: ['/purchases', '/analytics/dashboard', '/products'],
+  });
+  const updateMutation = useUpdate('/purchases', {
+    invalidate: ['/purchases', '/analytics/dashboard', '/products'],
+  });
+  const deleteMutation = useDelete('/purchases', {
+    invalidate: ['/purchases', '/analytics/dashboard', '/products'],
+  });
 
   const suppliers = suppliersData?.data || [];
   const products = productsData?.data || [];

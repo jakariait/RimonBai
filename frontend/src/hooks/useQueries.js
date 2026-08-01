@@ -8,6 +8,11 @@ const defaultQueryFn = async ({ queryKey }) => {
   return data;
 };
 
+const getInvalidateKeys = (invalidate) => {
+  if (!invalidate) return [];
+  return Array.isArray(invalidate) ? invalidate : [invalidate];
+};
+
 export function useFetch(url, params = {}, options = {}) {
   return useQuery({
     queryKey: [url, params],
@@ -25,7 +30,9 @@ export function useCreate(url, options = {}) {
     },
     onSuccess: (data) => {
       toast.success(data?.message || 'Created successfully');
-      options?.invalidate && queryClient.invalidateQueries({ queryKey: [options.invalidate] });
+      getInvalidateKeys(options?.invalidate).forEach((key) =>
+        queryClient.invalidateQueries({ queryKey: [key] })
+      );
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');
@@ -42,7 +49,9 @@ export function useUpdate(url, options = {}) {
     },
     onSuccess: (data) => {
       toast.success(data?.message || 'Updated successfully');
-      options?.invalidate && queryClient.invalidateQueries({ queryKey: [options.invalidate] });
+      getInvalidateKeys(options?.invalidate).forEach((key) =>
+        queryClient.invalidateQueries({ queryKey: [key] })
+      );
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');
@@ -59,7 +68,9 @@ export function useDelete(url, options = {}) {
     },
     onSuccess: (data) => {
       toast.success(data?.message || 'Deleted successfully');
-      options?.invalidate && queryClient.invalidateQueries({ queryKey: [options.invalidate] });
+      getInvalidateKeys(options?.invalidate).forEach((key) =>
+        queryClient.invalidateQueries({ queryKey: [key] })
+      );
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Something went wrong');

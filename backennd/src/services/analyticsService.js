@@ -43,7 +43,13 @@ const getDashboardStats = async (period = 'monthly', startDate, endDate) => {
   const { start, end } = getDateRange(period, startDate, endDate);
 
   const salesAgg = await Sale.aggregate([
-    { $match: { saleDate: { $gte: start, $lte: end }, status: { $ne: 'Cancelled' } } },
+    {
+      $match: {
+        saleDate: { $gte: start, $lte: end },
+        status: { $ne: 'Cancelled' },
+        isDeleted: { $ne: true },
+      },
+    },
     {
       $group: {
         _id: null,
@@ -84,7 +90,13 @@ const getDashboardStats = async (period = 'monthly', startDate, endDate) => {
   const expenses = expenseAgg[0]?.totalExpenses || 0;
 
   const salesData = await Sale.aggregate([
-    { $match: { saleDate: { $gte: start, $lte: end }, status: { $ne: 'Cancelled' } } },
+    {
+      $match: {
+        saleDate: { $gte: start, $lte: end },
+        status: { $ne: 'Cancelled' },
+        isDeleted: { $ne: true },
+      },
+    },
     {
       $group: {
         _id: { $dateToString: { format: '%Y-%m-%d', date: '$saleDate' } },
@@ -114,7 +126,7 @@ const getDashboardStats = async (period = 'monthly', startDate, endDate) => {
     currentStock: { $gt: 0 },
   }).limit(10);
 
-  const recentSales = await Sale.find()
+  const recentSales = await Sale.find({ isDeleted: { $ne: true } })
     .sort({ createdAt: -1 })
     .limit(10)
     .populate('customer', 'name')
@@ -160,7 +172,13 @@ const getProfitLoss = async (period = 'monthly', startDate, endDate) => {
   const { start, end } = getDateRange(period, startDate, endDate);
 
   const salesAgg = await Sale.aggregate([
-    { $match: { saleDate: { $gte: start, $lte: end }, status: { $ne: 'Cancelled' } } },
+    {
+      $match: {
+        saleDate: { $gte: start, $lte: end },
+        status: { $ne: 'Cancelled' },
+        isDeleted: { $ne: true },
+      },
+    },
     {
       $group: {
         _id: null,
@@ -172,7 +190,13 @@ const getProfitLoss = async (period = 'monthly', startDate, endDate) => {
   ]);
 
   const cogsAgg = await Sale.aggregate([
-    { $match: { saleDate: { $gte: start, $lte: end }, status: { $ne: 'Cancelled' } } },
+    {
+      $match: {
+        saleDate: { $gte: start, $lte: end },
+        status: { $ne: 'Cancelled' },
+        isDeleted: { $ne: true },
+      },
+    },
     { $unwind: '$items' },
     {
       $lookup: {

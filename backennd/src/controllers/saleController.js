@@ -27,7 +27,7 @@ const updateSaleStatus = async (req, res) => {
 };
 
 const deleteSale = async (req, res) => {
-  const result = await saleService.deleteSale(req.params.id);
+  const result = await saleService.deleteSale(req.params.id, req.user._id);
   sendSuccess(res, result, 'Sale deleted successfully');
 };
 

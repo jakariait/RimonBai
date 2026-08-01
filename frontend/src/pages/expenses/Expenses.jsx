@@ -28,9 +28,15 @@ function Expenses() {
   const [editingExpense, setEditingExpense] = useState(null);
 
   const { data, isLoading } = useFetch('/expenses', { page: 1, limit: 100 });
-  const createMutation = useCreate('/expenses', { invalidate: '/expenses' });
-  const updateMutation = useUpdate('/expenses', { invalidate: '/expenses' });
-  const deleteMutation = useDelete('/expenses', { invalidate: '/expenses' });
+  const createMutation = useCreate('/expenses', {
+    invalidate: ['/expenses', '/analytics/dashboard'],
+  });
+  const updateMutation = useUpdate('/expenses', {
+    invalidate: ['/expenses', '/analytics/dashboard'],
+  });
+  const deleteMutation = useDelete('/expenses', {
+    invalidate: ['/expenses', '/analytics/dashboard'],
+  });
 
   const {
     register,

@@ -26,9 +26,15 @@ function Suppliers() {
   const [deleteId, setDeleteId] = useState(null);
 
   const { data, isLoading } = useFetch('/suppliers', { page: 1, limit: 100 });
-  const createMutation = useCreate('/suppliers', { invalidate: '/suppliers' });
-  const updateMutation = useUpdate('/suppliers', { invalidate: '/suppliers' });
-  const deleteMutation = useDelete('/suppliers', { invalidate: '/suppliers' });
+  const createMutation = useCreate('/suppliers', {
+    invalidate: ['/suppliers', '/analytics/dashboard'],
+  });
+  const updateMutation = useUpdate('/suppliers', {
+    invalidate: ['/suppliers', '/analytics/dashboard'],
+  });
+  const deleteMutation = useDelete('/suppliers', {
+    invalidate: ['/suppliers', '/analytics/dashboard'],
+  });
 
   const {
     register,
