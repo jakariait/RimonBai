@@ -361,7 +361,8 @@ const getCustomerInvoices = async (id, query = {}) => {
       .filter((a) => String(a.invoice) === String(s._id))
       .reduce((sum, a) => sum + a.allocatedAmount, 0);
     const paidAtCreation = s.paymentReceivedAtInvoice || 0;
-    const totalPaid = paidAtCreation + invoiceAllocations;
+    const advanceUsed = s.advanceUsed || 0;
+    const totalPaid = paidAtCreation + invoiceAllocations + advanceUsed;
     const outstanding = Math.max(0, s.grandTotal - totalPaid);
 
     return {
@@ -385,6 +386,7 @@ const getCustomerDashboard = async (id) => {
     isDeleted: { $ne: true },
     status: { $ne: 'Cancelled' },
   })
+    .populate('items.product', 'productName sku')
     .sort({ saleDate: -1 })
     .lean();
 
@@ -407,7 +409,8 @@ const getCustomerDashboard = async (id) => {
       .filter((a) => String(a.invoice) === String(inv._id))
       .reduce((sum, a) => sum + a.allocatedAmount, 0);
     const paidAtCreation = inv.paymentReceivedAtInvoice || 0;
-    const totalPaidForInvoice = paidAtCreation + invoiceAllocations;
+    const advanceUsed = inv.advanceUsed || 0;
+    const totalPaidForInvoice = paidAtCreation + invoiceAllocations + advanceUsed;
     const outstanding = Math.max(0, inv.grandTotal - totalPaidForInvoice);
 
     let invStatus = 'due';

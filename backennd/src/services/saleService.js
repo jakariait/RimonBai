@@ -8,8 +8,8 @@ const APIFeatures = require('../utils/apiFeatures');
 const { generateInvoiceNumber, calculateTotals } = require('../utils/helpers');
 const customerPaymentService = require('./customerPaymentService');
 
-const getCustomerBalanceBeforeInvoice = async (customerId) => {
-  const summary = await customerPaymentService.getCustomerFinancialSummary(customerId);
+const getCustomerBalanceBeforeInvoice = async (customerId, excludeSaleId = null) => {
+  const summary = await customerPaymentService.getCustomerFinancialSummary(customerId, excludeSaleId);
   return {
     previousDue: summary.outstandingDue,
     advanceBalance: summary.advanceBalance,
@@ -148,7 +148,8 @@ const getSales = async (query) => {
       .filter((a) => String(a.invoice) === String(s._id))
       .reduce((sum, a) => sum + a.allocatedAmount, 0);
     const paidAtCreation = s.paymentReceivedAtInvoice || 0;
-    const totalPaidForInvoice = paidAtCreation + invoiceAllocations;
+    const advanceUsed = s.advanceUsed || 0;
+    const totalPaidForInvoice = paidAtCreation + invoiceAllocations + advanceUsed;
     const outstanding = Math.max(0, s.grandTotal - totalPaidForInvoice);
 
     return {
@@ -177,7 +178,8 @@ const getSaleById = async (id) => {
 
   const invoiceAllocations = allocations.reduce((sum, a) => sum + a.allocatedAmount, 0);
   const paidAtCreation = sale.paymentReceivedAtInvoice || 0;
-  const totalPaidForInvoice = paidAtCreation + invoiceAllocations;
+  const advanceUsed = sale.advanceUsed || 0;
+  const totalPaidForInvoice = paidAtCreation + invoiceAllocations + advanceUsed;
   const outstanding = Math.max(0, sale.grandTotal - totalPaidForInvoice);
 
   return {
@@ -212,7 +214,7 @@ const updateSale = async (id, data, userId) => {
     0
   );
 
-  const { previousDue, advanceBalance } = await getCustomerBalanceBeforeInvoice(data.customer);
+  const { previousDue, advanceBalance } = await getCustomerBalanceBeforeInvoice(data.customer, id);
 
   let advanceUsed = 0;
   let netPayable = totals.grandTotal;

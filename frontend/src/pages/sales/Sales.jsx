@@ -186,6 +186,11 @@ function Sales() {
     if (!printWindow) return;
     const biz = businessData?.data || {};
 
+    const paymentReceived =
+      sale.totalPaidWithAllocations ?? sale.paymentReceivedAtInvoice ?? sale.paidAmount ?? 0;
+    const totalGrandTotal = (sale.previousDue || 0) + (sale.grandTotal || 0) - (sale.advanceUsed || 0);
+    const remainingDue = Math.max(0, totalGrandTotal - paymentReceived);
+
     const itemsHtml = sale.items
       .map(
         (item) => `
@@ -293,7 +298,7 @@ function Sales() {
             <div class="party" style="text-align:right">
               <h4>Payment Method</h4>
               <p class="name">${sale.paymentMethod || 'N/A'}</p>
-              ${sale.status ? `<p style="margin-top:4px">Status: <span class="${sale.remainingDueAfterInvoice === 0 ? 'badge-paid' : sale.paymentReceivedAtInvoice > 0 ? 'badge-partial' : 'badge-due'}">${sale.remainingDueAfterInvoice === 0 ? 'Paid' : sale.paymentReceivedAtInvoice > 0 ? 'Partial' : 'Due'}</span></p>` : ''}
+              ${sale.status ? `<p style="margin-top:4px">Status: <span class="${remainingDue === 0 ? 'badge-paid' : paymentReceived > 0 ? 'badge-partial' : 'badge-due'}">${remainingDue === 0 ? 'Paid' : paymentReceived > 0 ? 'Partial' : 'Due'}</span></p>` : ''}
             </div>
           </div>
           ${sale.previousDue > 0 ? `<div class="due-summary"><span class="label">⚠ Previous Outstanding Due: </span><span class="value">${formatCurrency(sale.previousDue)}</span></div>` : ''}
@@ -312,29 +317,28 @@ function Sales() {
           </table>
           <div class="totals-section">
             <table class="totals-table">
-              <tr><td>Current Purchase</td><td>${formatCurrency(sale.grandTotal)}</td></tr>
-              ${sale.advanceUsed > 0 ? `<tr><td>Advance Used</td><td>-${formatCurrency(sale.advanceUsed)}</td></tr>` : ''}
+              <tr><td>Previous Due</td><td>${formatCurrency(sale.previousDue || 0)}</td></tr>
               <tr><td>Subtotal</td><td>${formatCurrency(sale.subtotal)}</td></tr>
               ${sale.discount > 0 ? `<tr><td>Discount</td><td>-${formatCurrency(sale.discount)}</td></tr>` : ''}
               ${sale.taxAmount > 0 ? `<tr><td>Tax (${sale.taxRate}%)</td><td>${formatCurrency(sale.taxAmount)}</td></tr>` : ''}
               ${sale.deliveryCharge > 0 ? `<tr><td>Delivery Charge</td><td>${formatCurrency(sale.deliveryCharge)}</td></tr>` : ''}
-              <tr class="grand-total"><td>Grand Total</td><td>${formatCurrency(sale.grandTotal)}</td></tr>
-              <tr><td>Payment Received</td><td>${formatCurrency(sale.paymentReceivedAtInvoice)}</td></tr>
-              <tr class="due"><td>Remaining Due</td><td>${formatCurrency(sale.remainingDueAfterInvoice)}</td></tr>
-              ${sale.previousDue > 0 ? `<tr><td>Previous Due</td><td>${formatCurrency(sale.previousDue)}</td></tr>` : ''}
-              <tr class="due"><td>Total Outstanding</td><td>${formatCurrency(sale.remainingDueAfterInvoice + sale.previousDue)}</td></tr>
+              <tr><td>Current Purchase</td><td>${formatCurrency(sale.grandTotal)}</td></tr>
+              ${sale.advanceUsed > 0 ? `<tr><td>Advance Used</td><td>-${formatCurrency(sale.advanceUsed)}</td></tr>` : ''}
+              <tr class="grand-total"><td>Grand Total</td><td>${formatCurrency(totalGrandTotal)}</td></tr>
+              <tr><td>Payment Received</td><td>${formatCurrency(paymentReceived)}</td></tr>
+              <tr class="due"><td>Remaining Due</td><td>${formatCurrency(remainingDue)}</td></tr>
             </table>
           </div>
           <div class="amount-in-words">
-            <strong>Amount in words:</strong> ${numberToWords(sale.grandTotal)} ${biz.currency || 'Taka'} only
+            <strong>Amount in words:</strong> ${numberToWords(totalGrandTotal)} ${biz.currency || 'Taka'} only
           </div>
           ${sale.notes ? `<div style="padding:12px 16px;background:#fef9c3;border-radius:8px;margin-bottom:12px;font-size:10px;color:#92400e;border:1px solid #fde68a"><strong>Notes:</strong> ${sale.notes}</div>` : ''}
           <div class="payment-info">
             <div>
               <div class="label">Payment Status</div>
               <div class="value" style="margin-top:4px">
-                <span class="${sale.remainingDueAfterInvoice === 0 ? 'badge-paid' : sale.paymentReceivedAtInvoice > 0 ? 'badge-partial' : 'badge-due'}">
-                  ${sale.remainingDueAfterInvoice === 0 ? 'Paid in Full' : sale.paymentReceivedAtInvoice > 0 ? 'Partially Paid' : 'Unpaid'}
+                <span class="${remainingDue === 0 ? 'badge-paid' : paymentReceived > 0 ? 'badge-partial' : 'badge-due'}">
+                  ${remainingDue === 0 ? 'Paid in Full' : paymentReceived > 0 ? 'Partially Paid' : 'Unpaid'}
                 </span>
               </div>
             </div>

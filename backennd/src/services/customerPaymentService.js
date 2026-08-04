@@ -6,15 +6,18 @@ const Counter = require('../models/Counter');
 const APIFeatures = require('../utils/apiFeatures');
 const { generatePaymentNumber } = require('../utils/helpers');
 
-const getCustomerFinancialSummary = async (customerId) => {
+const getCustomerFinancialSummary = async (customerId, excludeSaleId = null) => {
   const customer = await Customer.findById(customerId);
   if (!customer) throw Object.assign(new Error('Customer not found'), { statusCode: 404 });
 
-  const invoices = await Sale.find({
+  const invoiceQuery = {
     customer: customerId,
     isDeleted: { $ne: true },
     status: { $ne: 'Cancelled' },
-  })
+  };
+  if (excludeSaleId) invoiceQuery._id = { $ne: excludeSaleId };
+
+  const invoices = await Sale.find(invoiceQuery)
     .sort({ saleDate: 1 })
     .lean();
 
@@ -57,7 +60,8 @@ const getInvoiceOutstandingAmount = (invoice, allocations) => {
     .filter((a) => String(a.invoice) === String(invoice._id))
     .reduce((sum, a) => sum + a.allocatedAmount, 0);
   const paidAtCreation = invoice.paymentReceivedAtInvoice || 0;
-  const totalPaid = paidAtCreation + invoiceAllocations;
+  const advanceUsed = invoice.advanceUsed || 0;
+  const totalPaid = paidAtCreation + invoiceAllocations + advanceUsed;
   return Math.max(0, invoice.grandTotal - totalPaid);
 };
 
