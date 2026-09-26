@@ -76,7 +76,7 @@ function Dashboard() {
         <StatCard title="Net Profit" value={formatCurrency(stats?.netProfit)} icon={DollarSign} />
         <StatCard
           title="Total Expenses"
-          value={formatCurrency(stats?.totalExpenses)}
+          value={formatCurrency(stats?.totalExpensesAllTime ?? stats?.totalExpenses)}
           icon={TrendingDown}
         />
         <StatCard

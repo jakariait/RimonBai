@@ -86,6 +86,10 @@ const getDashboardStats = async (period = 'monthly', startDate, endDate) => {
     },
   ]);
 
+  const allTimeExpenseAgg = await Expense.aggregate([
+    { $group: { _id: null, totalExpenses: { $sum: '$amount' } } },
+  ]);
+
   const revenue = salesAgg[0]?.totalRevenue || 0;
   const cost = purchaseAgg[0]?.totalCost || 0;
   const expenses = expenseAgg[0]?.totalExpenses || 0;
@@ -182,6 +186,7 @@ const getDashboardStats = async (period = 'monthly', startDate, endDate) => {
     totalCost: cost,
     grossProfit: revenue - cost,
     totalExpenses: expenses,
+    totalExpensesAllTime: allTimeExpenseAgg[0]?.totalExpenses || 0,
     netProfit: revenue - cost - expenses,
     totalSales: salesAgg[0]?.count || 0,
     totalPurchases: purchaseAgg[0]?.count || 0,
