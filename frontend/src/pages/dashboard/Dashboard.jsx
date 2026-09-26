@@ -80,7 +80,7 @@ function Dashboard() {
           icon={TrendingDown}
         />
         <StatCard
-          title="Receivable"
+          title="Receivable (Customer Due)"
           value={formatCurrency(stats?.outstandingReceivable)}
           icon={Users}
         />

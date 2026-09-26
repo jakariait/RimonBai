@@ -3,6 +3,7 @@ const Purchase = require('../models/Purchase');
 const Expense = require('../models/Expense');
 const Product = require('../models/Product');
 const Customer = require('../models/Customer');
+const CustomerPayment = require('../models/CustomerPayment');
 const Supplier = require('../models/Supplier');
 
 const getDateRange = (period, startDate, endDate) => {
@@ -140,9 +141,37 @@ const getDashboardStats = async (period = 'monthly', startDate, endDate) => {
     .populate('createdBy', 'name')
     .lean();
 
-  const customersOutstanding = await Customer.aggregate([
-    { $group: { _id: null, total: { $sum: '$dueBalance' } } },
+  const [invoiceTotals, separatePayments, customers] = await Promise.all([
+    Sale.aggregate([
+      { $match: { isDeleted: { $ne: true }, status: { $ne: 'Cancelled' } } },
+      {
+        $group: {
+          _id: '$customer',
+          invoiceTotal: { $sum: '$grandTotal' },
+          invoicePaid: { $sum: '$paidAmount' },
+        },
+      },
+    ]),
+    CustomerPayment.aggregate([
+      { $match: { isDeleted: { $ne: true } } },
+      { $group: { _id: '$customer', paid: { $sum: '$amount' } } },
+    ]),
+    Customer.find({ isActive: true }).select('openingDue openingAdvance').lean(),
   ]);
+
+  const invoiceMap = new Map(invoiceTotals.map((row) => [String(row._id), row]));
+  const paymentMap = new Map(separatePayments.map((row) => [String(row._id), row]));
+
+  const customersOutstanding = customers.reduce((sum, customer) => {
+    const invoices = invoiceMap.get(String(customer._id));
+    const payments = paymentMap.get(String(customer._id));
+    const netDue =
+      (customer.openingDue || 0) +
+      (invoices?.invoiceTotal || 0) -
+      ((invoices?.invoicePaid || 0) + (payments?.paid || 0)) -
+      (customer.openingAdvance || 0);
+    return sum + Math.max(0, netDue);
+  }, 0);
 
   const suppliersOutstanding = await Supplier.aggregate([
     { $group: { _id: null, total: { $sum: '$outstandingBalance' } } },
@@ -156,7 +185,7 @@ const getDashboardStats = async (period = 'monthly', startDate, endDate) => {
     netProfit: revenue - cost - expenses,
     totalSales: salesAgg[0]?.count || 0,
     totalPurchases: purchaseAgg[0]?.count || 0,
-    outstandingReceivable: customersOutstanding[0]?.total || 0,
+    outstandingReceivable: customersOutstanding,
     outstandingPayable: suppliersOutstanding[0]?.total || 0,
     inventoryValue,
     lowStockCount: lowStockProducts.length,
