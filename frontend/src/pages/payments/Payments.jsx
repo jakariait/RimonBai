@@ -21,6 +21,7 @@ const paymentMethods = [
   { value: 'Cheque', label: 'Cheque' },
   { value: 'Card', label: 'Card' },
   { value: 'Mobile Banking', label: 'Mobile Banking' },
+  { value: 'On Condition', label: 'On Condition' },
 ];
 
 function Payments() {

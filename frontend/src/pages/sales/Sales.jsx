@@ -20,6 +20,7 @@ const paymentMethods = [
   { value: 'Cheque', label: 'Cheque' },
   { value: 'Card', label: 'Card' },
   { value: 'Mobile Banking', label: 'Mobile Banking' },
+  { value: 'On Condition', label: 'On Condition' },
 ];
 
 function Sales() {
@@ -188,7 +189,8 @@ function Sales() {
 
     const paymentReceived =
       sale.totalPaidWithAllocations ?? sale.paymentReceivedAtInvoice ?? sale.paidAmount ?? 0;
-    const totalGrandTotal = (sale.previousDue || 0) + (sale.grandTotal || 0) - (sale.advanceUsed || 0);
+    const totalGrandTotal =
+      (sale.previousDue || 0) + (sale.grandTotal || 0) - (sale.advanceUsed || 0);
     const remainingDue = Math.max(0, totalGrandTotal - paymentReceived);
 
     const itemsHtml = sale.items
@@ -591,7 +593,9 @@ function Sales() {
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">Total Outstanding</p>
-                    <p className="font-semibold text-destructive">{formatCurrency(previousDue + netPayable)}</p>
+                    <p className="font-semibold text-destructive">
+                      {formatCurrency(previousDue + netPayable)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -766,12 +770,16 @@ function Sales() {
               {detailModal.previousDue > 0 && (
                 <div className="flex justify-between text-sm">
                   <span>Previous Due</span>
-                  <span className="text-destructive">{formatCurrency(detailModal.previousDue)}</span>
+                  <span className="text-destructive">
+                    {formatCurrency(detailModal.previousDue)}
+                  </span>
                 </div>
               )}
               <div className="flex justify-between text-sm font-semibold text-destructive">
                 <span>Total Outstanding</span>
-                <span>{formatCurrency(detailModal.remainingDueAfterInvoice + detailModal.previousDue)}</span>
+                <span>
+                  {formatCurrency(detailModal.remainingDueAfterInvoice + detailModal.previousDue)}
+                </span>
               </div>
             </div>
             {detailModal.notes && (

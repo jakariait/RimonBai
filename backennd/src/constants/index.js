@@ -24,7 +24,14 @@ const EXPENSE_CATEGORIES = [
   'Others',
 ];
 
-const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Cheque', 'Card', 'Mobile Banking'];
+const PAYMENT_METHODS = [
+  'Cash',
+  'Bank Transfer',
+  'Cheque',
+  'Card',
+  'Mobile Banking',
+  'On Condition',
+];
 
 const PRODUCT_UNITS = ['Piece', 'Box', 'Pack', 'Set', 'Pair', 'Dozen', 'Roll', 'Bottle', 'Kit'];
 

@@ -38,6 +38,55 @@ function Purchases() {
 
   const supplierOptions = suppliers.map((s) => ({ value: s._id, label: s.companyName }));
 
+  const supplierMap = useMemo(
+    () => Object.fromEntries(suppliers.map((s) => [s._id, s])),
+    [suppliers]
+  );
+
+  const purchases = purchasesData?.data || [];
+
+  const advanceByPurchase = useMemo(() => {
+    const map = new Map();
+    const groups = new Map();
+
+    for (const purchase of purchases) {
+      const id =
+        purchase.supplier && typeof purchase.supplier === 'object'
+          ? purchase.supplier._id
+          : purchase.supplier;
+      if (!id) continue;
+      if (!groups.has(id)) groups.set(id, []);
+      groups.get(id).push(purchase);
+    }
+
+    for (const [supplierId, rows] of groups) {
+      const supplier = supplierMap[supplierId];
+      if (!supplier) continue;
+      const onPageDues = rows.reduce((sum, row) => sum + (row.dueAmount || 0), 0);
+      const olderPurchaseDues = (supplier?.outstandingBalance || 0) - onPageDues;
+      const sorted = [...rows].sort(
+        (a, b) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
+      );
+
+      let balanceBefore = olderPurchaseDues;
+      for (const row of sorted) {
+        map.set(row._id, Math.max(0, -balanceBefore));
+        balanceBefore += row.dueAmount || 0;
+      }
+    }
+
+    return map;
+  }, [purchases, supplierMap]);
+
+  const getPurchaseFinancials = (row) => {
+    const advanceApplied = advanceByPurchase.get(row._id) || 0;
+    const effectivePaid = (row.paidAmount || 0) + advanceApplied;
+    const effectiveDue = Math.round(((row.grandTotal || 0) - effectivePaid) * 100) / 100;
+    return { advanceApplied, effectivePaid, effectiveDue };
+  };
+
+  const detailFin = detailModal ? getPurchaseFinancials(detailModal) : null;
+
   const extraProducts = useMemo(() => {
     if (!editingPurchase?.items) return [];
     return editingPurchase.items
@@ -165,15 +214,34 @@ function Purchases() {
           {
             header: 'Due',
             accessor: 'dueAmount',
-            cell: (row) => formatCurrency(row.dueAmount),
+            cell: (row) => (
+              <span className={row.dueAmount < 0 ? 'text-green-600' : undefined}>
+                {formatCurrency(row.dueAmount)}
+              </span>
+            ),
           },
           {
             header: 'Status',
             accessor: 'status',
             cell: (row) => {
-              if (row.dueAmount === 0) return <Badge variant="success">Paid</Badge>;
-              if (row.dueAmount > 0 && row.paidAmount > 0)
-                return <Badge variant="warning">Partial</Badge>;
+              const { advanceApplied, effectivePaid, effectiveDue } = getPurchaseFinancials(row);
+              const title =
+                advanceApplied > 0
+                  ? `Supplier advance applied: ${formatCurrency(advanceApplied)}`
+                  : undefined;
+              if (row.dueAmount < 0) return <Badge variant="info">Advanced</Badge>;
+              if (effectiveDue <= 0)
+                return (
+                  <Badge variant="success" title={title}>
+                    Paid
+                  </Badge>
+                );
+              if (effectivePaid > 0)
+                return (
+                  <Badge variant="warning" title={title}>
+                    Partial
+                  </Badge>
+                );
               return <Badge variant="destructive">Unpaid</Badge>;
             },
           },
@@ -218,7 +286,7 @@ function Purchases() {
             ),
           },
         ]}
-        data={purchasesData?.data || []}
+        data={purchases}
         loading={isLoading}
       />
 
@@ -426,10 +494,28 @@ function Purchases() {
                 <span>Paid</span>
                 <span>{formatCurrency(detailModal.paidAmount)}</span>
               </div>
+              {detailFin?.advanceApplied > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Supplier Advance Applied</span>
+                  <span className="text-green-600">{formatCurrency(detailFin.advanceApplied)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span>Due</span>
-                <span className="text-destructive">{formatCurrency(detailModal.dueAmount)}</span>
+                <span className={detailModal.dueAmount < 0 ? 'text-green-600' : 'text-destructive'}>
+                  {formatCurrency(detailModal.dueAmount)}
+                </span>
               </div>
+              {detailFin?.advanceApplied > 0 && (
+                <div className="flex justify-between text-sm font-medium">
+                  <span>Net Due (after advance)</span>
+                  <span
+                    className={detailFin.effectiveDue > 0 ? 'text-destructive' : 'text-green-600'}
+                  >
+                    {formatCurrency(detailFin.effectiveDue)}
+                  </span>
+                </div>
+              )}
             </div>
 
             {detailModal.notes && (
