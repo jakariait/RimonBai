@@ -17,9 +17,7 @@ const getCustomerFinancialSummary = async (customerId, excludeSaleId = null) => 
   };
   if (excludeSaleId) invoiceQuery._id = { $ne: excludeSaleId };
 
-  const invoices = await Sale.find(invoiceQuery)
-    .sort({ saleDate: 1 })
-    .lean();
+  const invoices = await Sale.find(invoiceQuery).sort({ saleDate: 1 }).lean();
 
   const payments = await CustomerPayment.find({
     customer: customerId,
@@ -95,6 +93,10 @@ const createPayment = async (data, userId) => {
   );
   const paymentNumber = generatePaymentNumber('RCT', counter.seq);
 
+  const summary = await getCustomerFinancialSummary(data.customer);
+  const previousDue = summary.outstandingDue;
+  const newDue = Math.max(0, summary.netDue - data.amount);
+
   const payment = await CustomerPayment.create({
     customer: data.customer,
     paymentNumber,
@@ -104,6 +106,8 @@ const createPayment = async (data, userId) => {
     transactionId: data.transactionId || '',
     reference: data.reference || '',
     note: data.note || '',
+    previousDue,
+    newDue,
     receivedBy: userId,
   });
 
@@ -161,6 +165,100 @@ const reverseAllocations = async (paymentId) => {
   await CustomerPaymentAllocation.deleteMany({ payment: paymentId });
 };
 
+const buildDueSnapshots = async (customerId) => {
+  const customer = await Customer.findById(customerId).lean();
+  if (!customer) return new Map();
+
+  const invoices = await Sale.find({
+    customer: customerId,
+    isDeleted: { $ne: true },
+    status: { $ne: 'Cancelled' },
+  })
+    .sort({ saleDate: 1 })
+    .lean();
+
+  const payments = await CustomerPayment.find({
+    customer: customerId,
+    isDeleted: { $ne: true },
+  })
+    .sort({ paymentDate: 1 })
+    .lean();
+
+  const transactions = [];
+  for (const invoice of invoices) {
+    transactions.push({
+      sortKey: new Date(invoice.saleDate).getTime(),
+      type: 'invoice',
+      amount: invoice.grandTotal - (invoice.paidAmount || 0),
+    });
+  }
+  for (const payment of payments) {
+    transactions.push({
+      sortKey: new Date(payment.paymentDate).getTime(),
+      type: 'payment',
+      paymentId: String(payment._id),
+      amount: payment.amount,
+    });
+  }
+  transactions.sort((a, b) => a.sortKey - b.sortKey);
+
+  const snapshots = new Map();
+  let balance = (customer.openingDue || 0) - (customer.openingAdvance || 0);
+
+  for (const transaction of transactions) {
+    if (transaction.type === 'invoice') {
+      balance += transaction.amount;
+      continue;
+    }
+    const previousDue = Math.max(0, balance);
+    balance -= transaction.amount;
+    snapshots.set(transaction.paymentId, {
+      previousDue,
+      newDue: Math.max(0, balance),
+    });
+  }
+
+  return snapshots;
+};
+
+const backfillDueSnapshots = async (payments) => {
+  const missing = payments.filter((p) => p.previousDue == null || p.newDue == null);
+  if (!missing.length) return;
+
+  const grouped = new Map();
+  for (const payment of missing) {
+    const customerId = String(payment.customer?._id || payment.customer);
+    if (!customerId || customerId === 'undefined') continue;
+    if (!grouped.has(customerId)) grouped.set(customerId, []);
+    grouped.get(customerId).push(payment);
+  }
+
+  const operations = [];
+  for (const [customerId, rows] of grouped) {
+    const snapshots = await buildDueSnapshots(customerId);
+    for (const row of rows) {
+      const snapshot = snapshots.get(String(row._id));
+      if (!snapshot) continue;
+      row.previousDue = snapshot.previousDue;
+      row.newDue = snapshot.newDue;
+      operations.push({
+        updateOne: {
+          filter: { _id: row._id },
+          update: { $set: { previousDue: snapshot.previousDue, newDue: snapshot.newDue } },
+        },
+      });
+    }
+  }
+
+  if (operations.length) {
+    try {
+      await CustomerPayment.bulkWrite(operations);
+    } catch (err) {
+      // non-critical: values are already attached to the response
+    }
+  }
+};
+
 const getPayments = async (query) => {
   const features = new APIFeatures(
     CustomerPayment.find({ isDeleted: { $ne: true } })
@@ -173,6 +271,7 @@ const getPayments = async (query) => {
     .paginate();
 
   const payments = await features.query;
+  await backfillDueSnapshots(payments);
   const total = await CustomerPayment.countDocuments(features.query._conditions);
   return { data: payments, meta: features.getPaginationMeta(total) };
 };
@@ -201,12 +300,18 @@ const updatePayment = async (id, data, userId) => {
 
   const oldAmount = payment.amount;
 
+  const summary = await getCustomerFinancialSummary(payment.customer);
+  const netDueWithoutPayment = summary.netDue + oldAmount;
+  const nextAmount = data.amount !== undefined ? data.amount : oldAmount;
+
   const updateData = {};
   if (data.paymentDate) updateData.paymentDate = data.paymentDate;
   if (data.paymentMethod) updateData.paymentMethod = data.paymentMethod;
   if (data.transactionId !== undefined) updateData.transactionId = data.transactionId;
   if (data.reference !== undefined) updateData.reference = data.reference;
   if (data.note !== undefined) updateData.note = data.note;
+  updateData.previousDue = Math.max(0, netDueWithoutPayment);
+  updateData.newDue = Math.max(0, netDueWithoutPayment - nextAmount);
 
   if (data.amount !== undefined && data.amount !== oldAmount) {
     updateData.amount = data.amount;

@@ -27,6 +27,7 @@ function Payments() {
   const [modalOpen, setModalOpen] = useState(false);
   const [detailModal, setDetailModal] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState('');
 
   const { data, isLoading } = useFetch('/customer-payments', { page: 1, limit: 100 });
@@ -46,8 +47,25 @@ function Payments() {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm({ resolver: zodResolver(paymentSchema) });
+
+  const watchedCustomer = watch('customer');
+  const watchedAmount = watch('amount');
+
+  const { data: dueData } = useFetch(
+    `/customers/${watchedCustomer}/due`,
+    {},
+    { enabled: !!watchedCustomer }
+  );
+
+  const dueSummary = dueData?.data || null;
+  const previousDue = dueSummary?.outstandingDue || 0;
+  const amountReceived = parseFloat(watchedAmount) || 0;
+  const netDueAfter = dueSummary ? dueSummary.netDue - amountReceived : 0;
+  const newDue = Math.max(0, netDueAfter);
+  const newAdvance = netDueAfter < 0 ? Math.abs(netDueAfter) : 0;
 
   const openCreate = () => {
     reset({
@@ -63,8 +81,9 @@ function Payments() {
   };
 
   const onSubmit = async (data) => {
-    await createMutation.mutateAsync({ ...data, amount: parseFloat(data.amount) });
+    const result = await createMutation.mutateAsync({ ...data, amount: parseFloat(data.amount) });
     setModalOpen(false);
+    setPaymentSuccess(result?.data || null);
   };
 
   const handleDelete = async (id) => {
@@ -76,6 +95,8 @@ function Payments() {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     const biz = businessData?.data || {};
+    const previousDue = payment.previousDue ?? 0;
+    const newDue = payment.newDue ?? 0;
 
     printWindow.document.write(`
       <html>
@@ -106,6 +127,12 @@ function Payments() {
           .amount-section .label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
           .amount-section .amount { font-size: 32px; font-weight: 800; color: #059669; margin: 8px 0; }
           .amount-section .method { font-size: 11px; color: #475569; }
+          .due-section { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+          .due-box { padding: 10px 8px; text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+          .due-box .label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+          .due-box .value { font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 4px; }
+          .due-box.due-red .value { color: #dc2626; }
+          .due-box.due-green .value { color: #059669; }
           .details { margin-bottom: 14px; }
           .details table { width: 100%; }
           .details td { padding: 4px 10px; font-size: 11px; }
@@ -167,6 +194,16 @@ function Payments() {
             <div class="label">Amount Received</div>
             <div class="amount">${formatCurrency(payment.amount)}</div>
             <div class="method">via ${payment.paymentMethod}</div>
+          </div>
+          <div class="due-section">
+            <div class="due-box ${previousDue > 0 ? 'due-red' : 'due-green'}">
+              <div class="label">Previous Due</div>
+              <div class="value">${formatCurrency(previousDue)}</div>
+            </div>
+            <div class="due-box ${newDue > 0 ? 'due-red' : 'due-green'}">
+              <div class="label">New Due</div>
+              <div class="value">${formatCurrency(newDue)}</div>
+            </div>
           </div>
           <div class="details">
             <table>
@@ -291,6 +328,36 @@ function Payments() {
               <Input {...register('reference')} placeholder="Reference" />
             </FormField>
           </div>
+          {watchedCustomer && dueSummary && (
+            <Card className="bg-muted/30">
+              <CardContent className="p-4">
+                <h4 className="text-sm font-medium mb-2">Due Summary</h4>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs">Previous Due</p>
+                    <p className="font-semibold text-destructive">{formatCurrency(previousDue)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Amount Received</p>
+                    <p className="font-semibold text-green-600">{formatCurrency(amountReceived)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">New Due</p>
+                    <p
+                      className={`font-semibold ${newDue > 0 ? 'text-destructive' : 'text-green-600'}`}
+                    >
+                      {formatCurrency(newDue)}
+                    </p>
+                  </div>
+                </div>
+                {newAdvance > 0 && (
+                  <p className="mt-2 text-xs text-green-600">
+                    Advance Balance after payment: {formatCurrency(newAdvance)}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
           <FormField label="Note" name="note">
             <Input {...register('note')} placeholder="Notes" />
           </FormField>
@@ -303,6 +370,51 @@ function Payments() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        open={!!paymentSuccess}
+        onClose={() => setPaymentSuccess(null)}
+        title="Payment Received"
+        size="sm"
+      >
+        {paymentSuccess && (
+          <div className="space-y-4">
+            <div className="text-center py-2">
+              <p className="text-sm text-muted-foreground">Amount Received</p>
+              <p className="text-3xl font-bold text-green-600">
+                {formatCurrency(paymentSuccess.amount)}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Receipt # {paymentSuccess.paymentNumber}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4 p-3 bg-muted/40 rounded-lg">
+              <div>
+                <p className="text-xs text-muted-foreground">Previous Due</p>
+                <p className="font-semibold text-destructive">
+                  {formatCurrency(paymentSuccess.previousDue ?? 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">New Due</p>
+                <p
+                  className={`font-semibold ${(paymentSuccess.newDue || 0) > 0 ? 'text-destructive' : 'text-green-600'}`}
+                >
+                  {formatCurrency(paymentSuccess.newDue ?? 0)}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => setPaymentSuccess(null)}>
+                Close
+              </Button>
+              <Button type="button" onClick={() => printReceipt(paymentSuccess)}>
+                <Printer className="h-4 w-4 mr-2" /> Print Receipt
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       <Modal
@@ -330,6 +442,24 @@ function Payments() {
                 <p className="text-sm text-muted-foreground">Amount</p>
                 <p className="font-medium text-lg text-green-600">
                   {formatCurrency(detailModal.amount)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Previous Due</p>
+                <p className="font-medium text-destructive">
+                  {detailModal.previousDue != null
+                    ? formatCurrency(detailModal.previousDue)
+                    : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">New Due</p>
+                <p
+                  className={`font-medium ${
+                    (detailModal.newDue || 0) > 0 ? 'text-destructive' : 'text-green-600'
+                  }`}
+                >
+                  {detailModal.newDue != null ? formatCurrency(detailModal.newDue) : 'N/A'}
                 </p>
               </div>
               <div>

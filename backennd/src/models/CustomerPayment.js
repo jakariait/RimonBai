@@ -42,6 +42,14 @@ const customerPaymentSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    previousDue: {
+      type: Number,
+      default: null,
+    },
+    newDue: {
+      type: Number,
+      default: null,
+    },
     receivedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
